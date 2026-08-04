@@ -15,11 +15,11 @@ func TestStateAndStateManager(t *testing.T) {
 			runtime.StateCreated:      "CREATED",
 			runtime.StateInitializing: "INITIALIZING",
 			runtime.StateInitialized:  "INITIALIZED",
-			runtime.StatePreparing:   "PREPARING",
-			runtime.StatePrepared:    "PREPARED",
-			runtime.StateRunning:     "RUNNING",
+			runtime.StatePreparing:    "PREPARING",
+			runtime.StatePrepared:     "PREPARED",
+			runtime.StateRunning:      "RUNNING",
 			runtime.StateShuttingDown: "SHUTTING_DOWN",
-			runtime.StateTerminated:  "TERMINATED",
+			runtime.StateTerminated:   "TERMINATED",
 			runtime.State(255):        "UNKNOWN_STATE(255)",
 		}
 		for st, expected := range states {

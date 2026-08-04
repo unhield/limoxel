@@ -286,10 +286,10 @@ func TestResult(t *testing.T) {
 
 func TestEnumsAndStrings(t *testing.T) {
 	stages := map[parser.PipelineStage]string{
-		parser.StagePrepare:         "PREPARE",
-		parser.StageProcess:         "PROCESS",
-		parser.StageFinalize:        "FINALIZE",
-		parser.PipelineStage(99):    "UNKNOWN_STAGE(99)",
+		parser.StagePrepare:      "PREPARE",
+		parser.StageProcess:      "PROCESS",
+		parser.StageFinalize:     "FINALIZE",
+		parser.PipelineStage(99): "UNKNOWN_STAGE(99)",
 	}
 	for st, str := range stages {
 		if st.String() != str {
@@ -298,10 +298,10 @@ func TestEnumsAndStrings(t *testing.T) {
 	}
 
 	statuses := map[parser.Status]string{
-		parser.StatusSuccess:     "SUCCESS",
-		parser.StatusFailure:     "FAILURE",
-		parser.StatusPartial:     "PARTIAL",
-		parser.Status(99):        "UNKNOWN_STATUS(99)",
+		parser.StatusSuccess: "SUCCESS",
+		parser.StatusFailure: "FAILURE",
+		parser.StatusPartial: "PARTIAL",
+		parser.Status(99):    "UNKNOWN_STATUS(99)",
 	}
 	for st, str := range statuses {
 		if st.String() != str {
