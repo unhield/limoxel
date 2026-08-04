@@ -10,7 +10,7 @@
 
 ![Release](https://img.shields.io/github/v/release/unhield/limoxel?style=for-the-badge)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/unhield/limoxel?style=for-the-badge)
-![License](https://img.shields.io/github/license/unhield/limoxel?style=for-the-badge)
+![License](https://img.shields.io/github/license/unhield/limoxel.svg?style=for-the-badge)
 ![CI](https://img.shields.io/github/actions/workflow/status/unhield/limoxel/ci.yml?branch=main&style=for-the-badge&label=CI)
 ![Documentation](https://img.shields.io/badge/Documentation-Complete-success?style=for-the-badge)
 
