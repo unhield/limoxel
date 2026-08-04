@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Publish Release
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go-version:
+          - "1.26.5"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Verify Dependencies
+        run: go mod verify
+
+      - name: Run Tests
+        run: go test ./...
+
+      - name: Build Linux Binary
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 go build -o dist/limoxel-linux-amd64 ./cmd/limoxel
+
+      - name: Build Windows Binary
+        run: |
+          GOOS=windows GOARCH=amd64 go build -o dist/limoxel-windows-amd64.exe ./cmd/limoxel
+
+      - name: Build macOS Binary
+        run: |
+          GOOS=darwin GOARCH=amd64 go build -o dist/limoxel-darwin-amd64 ./cmd/limoxel
+
+      - name: Generate Release Archive
+        run: |
+          cd dist
+          tar -czf limoxel-linux-amd64.tar.gz limoxel-linux-amd64
+          zip limoxel-windows-amd64.zip limoxel-windows-amd64.exe
+          tar -czf limoxel-darwin-amd64.tar.gz limoxel-darwin-amd64
+          cd ..
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/limoxel-linux-amd64.tar.gz
+            dist/limoxel-windows-amd64.zip
+            dist/limoxel-darwin-amd64.tar.gz
+          generate_release_notes: true

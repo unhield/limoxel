@@ -1,0 +1,59 @@
+# ==============================================================================
+# Limoxel
+# CODEOWNERS
+#
+# This file defines the default code owners for the Limoxel repository.
+# All pull requests are automatically assigned for review to the listed
+# code owners when branch protection rules are enabled.
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Default Owner
+# ------------------------------------------------------------------------------
+
+* @unhield
+
+# ------------------------------------------------------------------------------
+# Documentation
+# ------------------------------------------------------------------------------
+
+/docs/ @unhield
+
+# ------------------------------------------------------------------------------
+# Production Source
+# ------------------------------------------------------------------------------
+
+/cmd/ @unhield
+/internal/ @unhield
+
+# ------------------------------------------------------------------------------
+# Tests
+# ------------------------------------------------------------------------------
+
+/tests/ @unhield
+
+# ------------------------------------------------------------------------------
+# GitHub Configuration
+# ------------------------------------------------------------------------------
+
+/.github/ @unhield
+
+# ------------------------------------------------------------------------------
+# Repository Configuration
+# ------------------------------------------------------------------------------
+
+README.md @unhield
+CHANGELOG.md @unhield
+CONTRIBUTING.md @unhield
+CODE_OF_CONDUCT.md @unhield
+SECURITY.md @unhield
+SUPPORT.md @unhield
+
+LICENSE @unhield
+
+.gitignore @unhield
+.gitattributes @unhield
+.editorconfig @unhield
+
+go.mod @unhield
+go.sum @unhield

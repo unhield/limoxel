@@ -1,0 +1,76 @@
+# ==============================================================================
+# Limoxel
+# Dependabot Configuration
+# ==============================================================================
+
+version: 2
+
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 5
+
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+
+    labels:
+      - "dependencies"
+
+    reviewers:
+      - "unhield"
+
+    assignees:
+      - "unhield"
+
+    rebase-strategy: "auto"
+
+    versioning-strategy: "increase"
+
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
+
+    ignore:
+      - dependency-name: "golang.org/x/*"
+        update-types:
+          - "version-update:semver-major"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:15"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 3
+
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+    labels:
+      - "github-actions"
+
+    reviewers:
+      - "unhield"
+
+    assignees:
+      - "unhield"
+
+    rebase-strategy: "auto"
+
+    groups:
+      github-actions:
+        patterns:
+          - "*"

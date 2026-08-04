@@ -1,0 +1,82 @@
+# ==============================================================================
+# Limoxel
+# Enterprise Go Repository
+#
+# .gitattributes
+# ==============================================================================
+
+# ==============================================================================
+# Text Files
+# Normalize line endings automatically.
+# ==============================================================================
+
+* text=auto
+
+# ==============================================================================
+# Source Code
+# ==============================================================================
+
+*.go          text
+*.mod         text
+*.sum         text
+
+*.md          text
+*.txt         text
+
+*.yml         text
+*.yaml        text
+
+*.json        text
+*.toml        text
+
+*.sh          text eol=lf
+
+# ==============================================================================
+# Windows Scripts
+# ==============================================================================
+
+*.bat         text eol=crlf
+*.cmd         text eol=crlf
+*.ps1         text eol=crlf
+
+# ==============================================================================
+# GitHub Configuration
+# ==============================================================================
+
+.github/**    text
+
+# ==============================================================================
+# Binary Files
+# ==============================================================================
+
+*.png         binary
+*.jpg         binary
+*.jpeg        binary
+*.gif         binary
+*.webp        binary
+*.ico         binary
+
+*.pdf         binary
+
+*.zip         binary
+*.gz          binary
+*.tgz         binary
+*.tar         binary
+*.7z          binary
+*.rar         binary
+
+*.exe         binary
+*.dll         binary
+*.so          binary
+*.dylib       binary
+
+# ==============================================================================
+# Linguist
+# ==============================================================================
+
+LICENSE linguist-documentation=true
+CHANGELOG.md linguist-documentation=true
+CODE_OF_CONDUCT.md linguist-documentation=true
+CONTRIBUTING.md linguist-documentation=true
+SECURITY.md linguist-documentation=true
+SUPPORT.md linguist-documentation=true

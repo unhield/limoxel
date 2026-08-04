@@ -1,0 +1,78 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Repository
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go-version:
+          - "1.26.5"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: Verify Go Version
+        run: go version
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Verify Dependencies
+        run: go mod verify
+
+      - name: Verify Module Files
+        run: go mod tidy && git diff --exit-code
+
+      - name: Format Check
+        run: |
+          files=$(gofmt -l .)
+          if [ -n "$files" ]; then
+            echo "The following files require formatting:"
+            echo "$files"
+            exit 1
+          fi
+
+      - name: Static Analysis
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
+
+      - name: Unit & Integration Tests
+        run: go test ./... -v
+
+      - name: Upload Coverage
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage.out
+          if-no-files-found: ignore
+
+      - name: Validation Summary
+        run: |
+          echo "Repository validation completed successfully."

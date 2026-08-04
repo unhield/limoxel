@@ -1,0 +1,23 @@
+# ==============================================================================
+# Limoxel
+# GitHub Issue Configuration
+# ==============================================================================
+
+blank_issues_enabled: false
+
+contact_links:
+  - name: Engineering Discussions
+    url: https://github.com/unhield/limoxel/discussions
+    about: Ask questions, discuss architecture, engineering decisions, or general usage.
+
+  - name: Security Reporting
+    url: mailto:hello.limoxel@gmail.com
+    about: Please report potential security vulnerabilities privately.
+
+  - name: Contribution Questions
+    url: mailto:hello.limoxel@gmail.com
+    about: Contact the maintainer before beginning significant contributions if you are unsure whether they align with the project's engineering direction.
+
+  - name: Project Documentation
+    url: https://github.com/unhield/limoxel/tree/main/docs
+    about: Browse the official engineering documentation before opening an issue.

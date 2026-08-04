@@ -1,0 +1,76 @@
+name: Documentation Validation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "CODE_OF_CONDUCT.md"
+      - "SECURITY.md"
+      - "SUPPORT.md"
+      - "docs/**"
+
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "CODE_OF_CONDUCT.md"
+      - "SECURITY.md"
+      - "SUPPORT.md"
+      - "docs/**"
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Verify Documentation Structure
+        run: |
+          required_files=(
+            "README.md"
+            "CHANGELOG.md"
+            "CONTRIBUTING.md"
+            "CODE_OF_CONDUCT.md"
+            "SECURITY.md"
+            "SUPPORT.md"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required documentation: $file"
+              exit 1
+            fi
+          done
+
+      - name: Verify Documentation Directory
+        run: |
+          if [ ! -d "docs" ]; then
+            echo "Documentation directory not found."
+            exit 1
+          fi
+
+      - name: Check Markdown Files
+        run: |
+          find . \
+            -type f \
+            -name "*.md" \
+            -print
+
+      - name: Validation Summary
+        run: |
+          echo "Documentation validation completed successfully."
