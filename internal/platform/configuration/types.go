@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -133,6 +134,11 @@ func (v Value) Int() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	if i64 < int64(math.MinInt) || i64 > int64(math.MaxInt) {
+		return 0, fmt.Errorf("%w: integer overflow converting int64 to int", ErrTypeMismatch)
+	}
+
 	return int(i64), nil
 }
 
