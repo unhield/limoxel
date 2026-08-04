@@ -392,10 +392,10 @@ func TestTerminalRenderer(t *testing.T) {
 
 func TestMessageTypeStrings(t *testing.T) {
 	types := map[cli.MessageType]string{
-		cli.MessageInfo:    "INFO",
-		cli.MessageSuccess: "SUCCESS",
-		cli.MessageWarning: "WARNING",
-		cli.MessageError:   "ERROR",
+		cli.MessageInfo:     "INFO",
+		cli.MessageSuccess:  "SUCCESS",
+		cli.MessageWarning:  "WARNING",
+		cli.MessageError:    "ERROR",
 		cli.MessageType(99): "UNKNOWN(99)",
 	}
 
