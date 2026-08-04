@@ -130,16 +130,35 @@ func (v Value) String() (string, error) {
 
 // Int returns the value as an integer, converting if possible.
 func (v Value) Int() (int, error) {
-	i64, err := v.Int64()
-	if err != nil {
-		return 0, err
+	if v.IsEmpty() {
+		return 0, ErrKeyNotFound
 	}
 
-	if i64 < int64(math.MinInt) || i64 > int64(math.MaxInt) {
-		return 0, fmt.Errorf("%w: integer overflow converting int64 to int", ErrTypeMismatch)
+	switch val := v.raw.(type) {
+	case int64:
+		if val < int64(math.MinInt) || val > int64(math.MaxInt) {
+			return 0, fmt.Errorf("%w: integer overflow converting int64 to int", ErrTypeMismatch)
+		}
+		return int(val), nil
+	case string:
+		i, err := strconv.Atoi(strings.TrimSpace(val))
+		if err != nil {
+			return 0, fmt.Errorf("%w: cannot convert string %q to int: %v", ErrTypeMismatch, val, err)
+		}
+		return i, nil
+	case float64:
+		if val < float64(math.MinInt) || val > float64(math.MaxInt) {
+			return 0, fmt.Errorf("%w: float64 value %v overflows int range", ErrTypeMismatch, val)
+		}
+		return int(val), nil
+	case bool:
+		if val {
+			return 1, nil
+		}
+		return 0, nil
+	default:
+		return 0, fmt.Errorf("%w: cannot convert type %s to int", ErrTypeMismatch, v.vType)
 	}
-
-	return int(i64), nil
 }
 
 // Int64 returns the value as an int64, converting if possible.
