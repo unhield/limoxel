@@ -205,15 +205,21 @@ Production implementation, engineering documentation, executable entry points, r
 ```text
 limoxel/
 │
-├── cmd/           # Executable entry points
-├── docs/          # Engineering documentation
-├── internal/      # Production implementation
-├── tests/         # Repository-level validation
+├── .github/                 # Repository automation & workflows
+├── cmd/                     # Executable entry points
+├── docs/                    # Engineering documentation
+├── internal/                # Internal implementation
+├── tests/                   # Testing infrastructure
 │
-├── README.md
-├── LICENSE
-├── go.mod
-└── go.sum
+├── CHANGELOG.md             # Release history
+├── CODEOWNERS               # Repository ownership
+├── CODE_OF_CONDUCT.md       # Community guidelines
+├── CONTRIBUTING.md          # Contribution guide
+├── LICENSE                  # MIT License
+├── README.md                # Project overview
+├── SECURITY.md              # Security policy
+├── go.mod                   # Go module definition
+└── go.sum                   # Dependency checksums
 ```
 
 The complete repository organization, directory responsibilities, package responsibilities, engineering conventions, and repository governance are documented in [`docs/01_foundation/12_Repository_Structure.md`](docs/01_foundation/12_Repository_Structure.md).
@@ -433,6 +439,16 @@ If you plan to contribute a significant feature, architectural change, repositor
 before investing significant implementation effort.
 
 Thank you for helping improve Limoxel.
+
+---
+
+## ❤️ Support Limoxel
+
+Limoxel is developed and maintained as an independent open-source project.
+
+If Limoxel saves you time, supports your research, or becomes part of your engineering workflow, consider supporting its continued development.
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-Buy%20Me%20A%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000000)](https://buymeacoffee.com/limoxel)
 
 ---
 
