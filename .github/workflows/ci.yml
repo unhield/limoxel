@@ -61,17 +61,16 @@ jobs:
       - name: Build
         run: go build ./...
 
-      - name: Unit & Integration Tests
-        run: go test ./... -v
+      - name: Unit & Integration Tests (with Race Detector and Coverage)
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./... -v
 
       - name: Upload Coverage
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: |
-            coverage.out
-          if-no-files-found: ignore
+          path: coverage.out
+          if-no-files-found: error
 
       - name: Validation Summary
         run: |
