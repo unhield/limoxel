@@ -27,7 +27,6 @@
 ---
 
 <details>
-
 <summary><strong>Table of Contents</strong></summary>
 
 - [Overview](#overview)
@@ -35,6 +34,7 @@
 - [Architecture at a Glance](#architecture-at-a-glance)
 - [Engineering Foundation](#engineering-foundation)
 - [Core Platform Components](#core-platform-components)
+- [Repository Capabilities](#repository-capabilities)
 - [Engineering Characteristics](#engineering-characteristics)
 - [Production Validation](#production-validation)
 - [Repository Organization](#repository-organization)
@@ -58,7 +58,7 @@ Software repositories are engineering systems composed of source code, project s
 
 Limoxel establishes a unified engineering platform capable of understanding these systems through a modular, production-oriented architecture.
 
-Rather than treating repository analysis as a collection of isolated tools, Limoxel provides a cohesive engineering foundation upon which advanced platform capabilities and repository intelligence can be built.
+Rather than treating repository analysis as a collection of isolated tools, Limoxel provides a cohesive engineering foundation together with deterministic repository capabilities for discovering, indexing, analyzing, modeling, and querying software repositories.
 
 ---
 
@@ -68,7 +68,7 @@ The engineering philosophy of Limoxel is founded on a single principle:
 
 > **A stable engineering foundation enables continuous innovation.**
 
-The core platform is designed to remain stable while future capabilities extend the platform through clearly defined engineering boundaries.
+The core platform is designed to remain stable while additional capabilities extend the platform through clearly defined engineering boundaries.
 
 This approach preserves architectural consistency, minimizes long-term complexity, and enables sustainable evolution without redesigning the core system.
 
@@ -85,21 +85,30 @@ This approach preserves architectural consistency, minimizes long-term complexit
                              ▼
                     Engine Coordination
                              │
-      ┌──────────────────────┼──────────────────────┐
-      ▼                      ▼                      ▼
- Repository             Language              Extension
-      │                      │                      │
-      └──────────────────────┼──────────────────────┘
                              ▼
                  Platform Infrastructure
                              │
- Bootstrap • Runtime • Registry • Lifecycle
- Configuration • Context • Logging • Events
+        ┌────────────────────┼────────────────────┐
+        ▼                    ▼                    ▼
+    Workspace /          Repository /       Language /
+      Project             Filesystem           Parser /
+                                              Extension
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             ▼
+                 Repository Capabilities
+                             │
+        ┌────────────┬───────┼───────┬────────────┐
+        ▼            ▼       ▼       ▼            ▼
+    Discovery    Structure  Indexing  Analysis   Search
+        │            │       │       │            │
+        └────────────┴───────┼───────┴────────────┘
+                             ▼
+                  Structured Repository
+                         Knowledge
 ```
 
----
-
-The following sections describe the engineering foundation, production components, repository organization, documentation, and long-term direction of Limoxel.
+The repository capabilities build on the established Limoxel foundation rather than replacing its domain models or core infrastructure.
 
 ---
 
@@ -124,13 +133,33 @@ The engineering foundation is organized into specialized production components.
 | **CLI** | Application entry point, command processing, and execution control |
 | **Engine** | Execution orchestration, workflow coordination, and processing pipeline management |
 | **Workspace** | Workspace initialization and execution context management |
-| **Repository** | Repository discovery, representation, and repository-level coordination |
+| **Repository** | Repository representation, repository-level coordination, and repository context |
 | **Project** | Project abstraction and project lifecycle management |
 | **Filesystem** | File discovery, ignore processing, filesystem abstraction, and repository traversal |
 | **Language** | Programming language registration, discovery, metadata, and lifecycle management |
-| **Parser** | Parser registration, parsing pipeline, execution, and parser lifecycle |
+| **Parser** | Parser registration, parsing pipeline, execution, and parser lifecycle management |
 | **Extension** | Extension registration, discovery, validation, isolation, and lifecycle management |
 | **Platform** | Bootstrap, runtime, configuration, lifecycle, logging, registry, events, and shared infrastructure |
+
+---
+
+# Repository Capabilities
+
+Limoxel provides bounded repository-analysis capabilities that build on the engineering foundation.
+
+| Capability | Responsibility |
+|------------|----------------|
+| **Repository Discovery** | Establish repository boundaries, discover files, apply exclusion rules, identify languages, and collect deterministic metadata |
+| **Repository Structure** | Represent directories, packages, modules, configuration, documentation, and repository organization |
+| **Dependency Analysis** | Model internal and external dependency relationships and dependency graphs |
+| **Source Indexing** | Index source files, packages, file relationships, metadata, and repository statistics |
+| **AST & Symbol Analysis** | Parse supported source code and expose structured symbols and symbol relationships |
+| **Cross-Reference Analysis** | Resolve repository relationships such as references, callers, callees, implementations, and dependencies |
+| **Repository Knowledge Graph** | Represent repository entities and relationships as a unified graph with traversal and query support |
+| **Repository Query APIs** | Provide stable internal services for repository, symbol, graph, and search operations |
+| **Repository Search** | Search repository symbols, files, packages, documentation, configuration, and supported fuzzy matches |
+
+These capabilities are designed as additive extensions around stable contracts. They provide reusable repository-analysis infrastructure without requiring consumers to understand the underlying filesystem or indexing implementation.
 
 ---
 
@@ -148,6 +177,7 @@ The engineering foundation is organized into specialized production components.
 - Layered platform architecture
 - Extensible engineering model
 - Stable engineering contracts
+- Bounded repository capabilities
 
 </td>
 <td width="50%" valign="top">
@@ -159,7 +189,9 @@ The engineering foundation is organized into specialized production components.
 - Comprehensive validation strategy
 - Runtime verification
 - Architecture verification
-- Performance baseline established
+- Deterministic repository analysis
+- Performance baselines
+- Stable API contracts
 
 </td>
 </tr>
@@ -169,7 +201,7 @@ The engineering foundation is organized into specialized production components.
 
 # Production Validation
 
-The engineering foundation has successfully completed comprehensive production validation.
+Limoxel's engineering foundation and repository capabilities are validated through automated and repository-level verification.
 
 | Validation | Status |
 |------------|:------:|
@@ -178,21 +210,20 @@ The engineering foundation has successfully completed comprehensive production v
 | Build Validation | ✅ |
 | Runtime Validation | ✅ |
 | Architecture Validation | ✅ |
-| Performance Baseline | ✅ |
-| Documentation Review | ✅ |
-| API Review | ✅ |
-| Dependency Audit | ✅ |
-| Repository Audit | ✅ |
+| Performance Validation | ✅ |
+| API Validation | ✅ |
+| Dependency Verification | ✅ |
+| Repository Validation | ✅ |
 
-The validation process verifies the engineering foundation across correctness, architectural integrity, runtime behavior, dependency management, repository organization, and production readiness.
+The validation process covers correctness, deterministic behavior, architectural integrity, runtime behavior, dependency integrity, repository organization, API contracts, and repository-analysis behavior.
 
 ---
 
 > [!NOTE]
 >
-> The completed engineering foundation is intended to remain stable.
+> The engineering foundation is intended to remain stable.
 >
-> Future capabilities expand the platform through additional components while preserving the established architecture, engineering contracts, and repository organization.
+> Additional capabilities extend the platform through bounded components while preserving established architecture, engineering contracts, and repository organization.
 
 ---
 
@@ -209,6 +240,7 @@ limoxel/
 ├── cmd/                     # Executable entry points
 ├── docs/                    # Engineering documentation
 ├── internal/                # Internal implementation
+│   └── capabilities/        # Repository capability implementations
 ├── tests/                   # Testing infrastructure
 │
 ├── CHANGELOG.md             # Release history
@@ -222,11 +254,21 @@ limoxel/
 └── go.sum                   # Dependency checksums
 ```
 
+Repository capability documentation is maintained under:
+
+```text
+docs/
+├── 01_foundation/
+├── 02_architecture/
+├── 03_engineering/
+└── 04_repository/
+```
+
 The complete repository organization, directory responsibilities, package responsibilities, engineering conventions, and repository governance are documented in [`docs/01_foundation/12_Repository_Structure.md`](docs/01_foundation/12_Repository_Structure.md).
 
 ---
 
-The following sections describe how to build, execute, navigate, and extend the Limoxel platform.
+The following sections describe how to build, execute, validate, navigate, and extend the Limoxel platform.
 
 ---
 
@@ -266,7 +308,6 @@ cd limoxel
 
 ```bash
 go mod tidy
-
 go mod verify
 ```
 
@@ -306,19 +347,15 @@ Or execute the compiled binary.
 
 # Validation
 
-The engineering foundation is validated through unit testing, integration testing, static analysis, build verification, dependency verification, and runtime validation.
+The platform is validated through unit testing, integration testing, static analysis, build verification, dependency verification, and repository-level validation.
 
-Execute the complete validation suite:
+Execute the standard validation suite:
 
 ```bash
 go test ./...
-
 go vet ./...
-
 go build ./...
-
 go mod tidy
-
 go mod verify
 ```
 
@@ -335,6 +372,7 @@ Documentation is organized into dedicated engineering categories.
 | Foundation | Engineering principles, repository organization, platform philosophy, and permanent engineering contracts |
 | Architecture | Component boundaries, dependency rules, package structure, infrastructure, runtime, communication, and system design |
 | Engineering | Implementation specifications, engineering contracts, validation, development standards, and operational guidance |
+| Repository | Repository discovery, structure, dependency, indexing, AST, symbols, cross-reference, graph, search, API, and repository-analysis specifications |
 
 Complete documentation is available under:
 
@@ -342,7 +380,8 @@ Complete documentation is available under:
 docs/
 ├── 01_foundation/
 ├── 02_architecture/
-└── 03_engineering/
+├── 03_engineering/
+└── 04_repository/
 ```
 
 ---
@@ -354,6 +393,7 @@ docs/
 | Engineering Foundation | ✅ Complete |
 | Production Implementation | ✅ Complete |
 | Platform Infrastructure | ✅ Complete |
+| Repository Capabilities | ✅ Complete |
 | Repository Organization | ✅ Complete |
 | Engineering Documentation | ✅ Complete |
 | Production Validation | ✅ Complete |
@@ -361,9 +401,7 @@ docs/
 | Community Standards | ✅ Complete |
 | Initial Release | ✅ Ready |
 
-The production engineering foundation of Limoxel has been completed.
-
-The repository is production-ready and serves as the permanent engineering foundation for future platform capabilities and repository intelligence.
+Limoxel provides a stable engineering foundation together with deterministic repository capabilities for discovery, structure analysis, dependency analysis, source indexing, AST and symbol analysis, cross-reference analysis, repository knowledge modeling, query services, and search.
 
 ---
 
@@ -373,47 +411,49 @@ Limoxel follows an incremental engineering roadmap.
 
 Each milestone extends the platform while preserving the existing engineering foundation.
 
-| Milestone | Status | Objective |
-|-----------|:------:|-----------|
+| Area | Status | Objective |
+|------|:------:|-----------|
 | Engineering Foundation | ✅ Complete | Establish the production engineering platform |
-| Platform Capabilities | 🔄 Planned | Expand repository processing through additional platform capabilities |
-| Repository Intelligence | 🔮 Future | Introduce semantic analysis, engineering knowledge, reasoning, and intelligent repository services |
+| Repository Capabilities | ✅ Complete | Provide deterministic repository discovery, analysis, modeling, querying, and search |
+| Developer Experience | 🔄 Planned | Expand developer-facing workflows, reporting, diagnostics, integrations, and tooling |
+| Repository Intelligence | 🔮 Future | Introduce deeper semantic analysis, reasoning, engineering insights, and intelligent repository services |
 
 ---
 
 # Beyond the Foundation
 
-The engineering foundation has been intentionally designed to support long-term platform evolution.
+The engineering foundation and repository capabilities have been designed to support long-term platform evolution.
 
-Future development focuses on expanding platform capabilities while preserving the stability of the existing architecture.
+Future development focuses on expanding the usefulness of the platform while preserving the stability of the existing architecture.
 
-### Platform Capabilities
+### Developer Experience
 
-Future platform capabilities may include:
+Future developer-facing capabilities may include:
 
-- Advanced repository management
-- Multi-project orchestration
-- Incremental repository processing
-- Performance enhancements
-- Additional developer tooling
-- Extended repository services
+- Richer repository-analysis workflows
+- Structured engineering reports and exports
+- Expanded configuration and diagnostics
+- Additional developer integrations
+- Repository visualization
+- Improved navigation and inspection workflows
 
 ### Repository Intelligence
 
 Future intelligence capabilities may include:
 
-- Engineering Knowledge Graph
 - Semantic repository analysis
-- Cross-reference analysis
+- Engineering context generation
 - Repository reasoning
-- AI-assisted engineering workflows
-- Advanced engineering insights
+- Change-impact analysis
+- Advanced architecture analysis
+- Engineering insights
+- AI-assisted engineering workflows built on structured repository knowledge
 
 > [!IMPORTANT]
 >
-> Future capabilities are designed to extend the platform.
+> Future capabilities are designed to extend the platform rather than replace its foundation.
 >
-> The engineering foundation, architectural principles, repository organization, and production contracts established by Limoxel remain the permanent core of the platform.
+> The engineering architecture, repository organization, and stable contracts remain central to the long-term design of Limoxel.
 
 ---
 
@@ -464,7 +504,7 @@ See the `LICENSE` file for the complete license text.
 
 Limoxel represents a long-term engineering initiative focused on building a stable and extensible foundation for repository understanding.
 
-The project emphasizes engineering quality, architectural discipline, documentation-first development, and long-term maintainability as the basis for future platform capabilities and repository intelligence.
+The project emphasizes engineering quality, architectural discipline, documentation-first development, deterministic analysis, and long-term maintainability as the basis for future platform capabilities and repository intelligence.
 
 <div align="center">
 
