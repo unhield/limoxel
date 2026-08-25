@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.2.1] - 2026-08-25
+
+### Fixed
+
+- Updated the release workflow to support GitHub immutable releases by creating releases as drafts before uploading generated platform binaries, then publishing the completed release.
+- Improved release publication reliability without changing Limoxel runtime behavior or public functionality.
+
+---
+
 ## [1.2.0] - 2026-08-25
 
 ### Added
