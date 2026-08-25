@@ -59,10 +59,16 @@ jobs:
           cd ..
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
+          draft: true
           files: |
             dist/limoxel-linux-amd64.tar.gz
             dist/limoxel-windows-amd64.zip
             dist/limoxel-darwin-amd64.tar.gz
           generate_release_notes: true
+
+      - name: Publish Github Release
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: false
