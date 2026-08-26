@@ -108,7 +108,7 @@ func TestCLIFramework(t *testing.T) {
 		if code != 0 {
 			t.Errorf("got exit code %d, want 0", code)
 		}
-		if !strings.Contains(out, "limoxel version 1.0.0") {
+		if !strings.Contains(out, "limoxel version 1.3.0") {
 			t.Errorf("unexpected version output: %s", out)
 		}
 
@@ -121,8 +121,8 @@ func TestCLIFramework(t *testing.T) {
 		if err := json.Unmarshal([]byte(out), &vMap); err != nil {
 			t.Fatalf("invalid json version output: %v (raw: %s)", err, out)
 		}
-		if vMap["version"] != "1.0.0" {
-			t.Errorf("got json version %q, want 1.0.0", vMap["version"])
+		if vMap["version"] != "1.3.0" {
+			t.Errorf("got json version %q, want 1.3.0", vMap["version"])
 		}
 	})
 
@@ -458,7 +458,7 @@ func TestInteractiveREPL(t *testing.T) {
 	}
 
 	out := stdout.String()
-	if !strings.Contains(out, "limoxel version 1.0.0") || !strings.Contains(out, "Goodbye!") {
+	if !strings.Contains(out, "limoxel version 1.3.0") || !strings.Contains(out, "Goodbye!") {
 		t.Errorf("unexpected interactive output: %s", out)
 	}
 }

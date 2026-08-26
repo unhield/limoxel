@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cfg, err := cli.NewConfig("limoxel", "1.0.0", ".")
+	cfg, err := cli.NewConfig("limoxel", "1.3.0", ".")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating CLI config: %v\n", err)
 		os.Exit(1)

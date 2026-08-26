@@ -34,7 +34,7 @@ type App struct {
 func NewApp() *App {
 	app := &App{
 		name:        "limoxel",
-		version:     "1.0.0",
+		version:     "1.3.0",
 		description: "Limoxel Developer Command Line Interface — Engineering Intelligence Platform",
 		commands:    make(map[string]*Command),
 		order:       make([]string, 0),
@@ -72,7 +72,7 @@ func (a *App) Name() string {
 // Version returns the application version string.
 func (a *App) Version() string {
 	if a == nil {
-		return "1.0.0"
+		return "1.3.0"
 	}
 	return a.version
 }
