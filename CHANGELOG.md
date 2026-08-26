@@ -6,6 +6,144 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.3.0] - 2026-08-26
+
+### Added
+
+#### Command-Line Interface
+
+- Added a comprehensive command-line interface for interacting with Limoxel repository capabilities.
+- Added repository lifecycle commands for initializing, opening, scanning, analyzing, validating, reloading, inspecting, reporting statistics, and closing repository contexts.
+- Added repository search commands covering symbols, files, packages, modules, dependencies, documentation, configuration, and related repository information.
+- Added intelligence commands for inspection, explanation, dependencies, navigation, health, impact analysis, and engineering recommendations.
+- Added knowledge graph commands for repository, package, module, dependency, call, and symbol relationships.
+- Added reporting commands for repository summaries, repository analysis, architecture, dependencies, and health.
+- Added export commands for repository graphs and diagrams.
+- Added configuration commands for initialization, listing, reading, setting, unsetting, validation, and profile management.
+- Added logging and diagnostic commands for operational inspection and troubleshooting.
+- Added health and runtime diagnostic commands.
+- Added debugging commands for execution tracing and diagnostic state inspection.
+- Added profiling commands for runtime statistics.
+- Added an interactive shell for stateful command-line repository workflows.
+
+#### Output and Export
+
+- Added structured output support for supported CLI operations.
+- Added JSON output.
+- Added YAML output.
+- Added TOML output.
+- Added XML output.
+- Added CSV output.
+- Added Markdown output.
+- Added HTML output.
+- Added PDF output.
+- Added Mermaid graph and diagram output.
+- Added Graphviz/DOT graph and diagram output.
+- Added SVG output.
+- Added PNG output.
+- Added interactive output where supported by the selected operation.
+- Added command output redirection to files where supported.
+
+#### Global CLI Options
+
+- Added repository selection through `--repo`.
+- Added output-format selection through `--format`.
+- Added direct output-file selection through `--output`.
+- Added configuration selection through `--config`.
+- Added configuration-profile selection through `--profile`.
+- Added log-level selection through `--log-level`.
+- Added log-format selection through `--log-format`.
+- Added log-file selection through `--log-file`.
+- Added verbose execution through `--verbose`.
+- Added debug execution through `--debug`.
+- Added tracing support through `--trace`.
+- Added profiling support through `--profile-cpu`.
+- Added memory profiling support through `--profile-mem`.
+- Added help and version options.
+- Added interactive execution control.
+
+#### Command-Specific Options
+
+- Added depth controls for applicable repository and intelligence operations.
+- Added result limits for applicable search operations.
+- Added category filtering.
+- Added severity filtering.
+- Added redaction controls.
+- Added force controls for applicable configuration operations.
+- Added analysis-level controls for applicable logging and analysis operations.
+
+#### Configuration
+
+- Added structured CLI configuration management.
+- Added configuration initialization.
+- Added configuration listing.
+- Added configuration value retrieval.
+- Added configuration value updates.
+- Added configuration value removal.
+- Added configuration validation.
+- Added named configuration profiles.
+- Added support for repository, output, logging, analysis, and related configuration settings exposed through the CLI.
+
+#### Diagnostics and Operations
+
+- Added structured operational logging.
+- Added configurable log levels.
+- Added text and JSON log output.
+- Added log-file output.
+- Added diagnostic collection.
+- Added health reporting.
+- Added execution tracing.
+- Added runtime diagnostic inspection.
+- Added CPU profiling support.
+- Added memory profiling support.
+- Added runtime statistics.
+
+#### Documentation
+
+- Added a comprehensive CLI user and developer guide.
+- Added command reference documentation.
+- Added CLI output and reporting documentation.
+- Added CLI configuration documentation.
+- Added CLI logging and diagnostics documentation.
+- Added CLI workflow examples.
+- Added command-line troubleshooting guidance.
+- Added executable usage examples for supported commands and options.
+
+### Changed
+
+- Extended Limoxel with a unified user-facing command-line experience across repository analysis, search, intelligence, graph operations, reporting, configuration, and diagnostics.
+- Extended command output handling to support human-readable and machine-readable workflows.
+- Extended repository operations with consistent command-line access.
+- Extended engineering analysis capabilities with command-line inspection and reporting workflows.
+- Extended repository graph capabilities with command-line traversal and export workflows.
+- Extended configuration management with command-line administration and named profiles.
+- Extended operational tooling with command-line logging, health, debugging, and profiling workflows.
+- Improved consistency of command structure, option handling, output behavior, and command documentation across the CLI.
+- Added an interactive workflow for users who prefer stateful repository exploration instead of independent one-shot commands.
+
+### Fixed
+
+- Improved command-line error handling and user-facing diagnostic behavior.
+- Improved consistency of command validation and option handling.
+- Improved handling of structured command output.
+- Improved configuration validation and configuration command behavior.
+- Improved operational diagnostics for troubleshooting command execution.
+- Improved command documentation coverage and alignment with supported CLI behavior.
+
+### Security
+
+- Sensitive values exposed through supported diagnostic, logging, configuration, and output workflows are subject to the CLI's redaction behavior.
+- Repository analysis remains focused on the repository supplied to Limoxel and does not require modification of repository source files for analysis operations.
+- Configuration and diagnostic output are designed to avoid unnecessarily exposing sensitive values through supported redaction mechanisms.
+
+### Documentation
+
+- Added the complete CLI documentation set under `docs/06_cli/`.
+- Added practical command examples, workflows, configuration guidance, diagnostics guidance, and troubleshooting information.
+- Expanded the project README with CLI usage, installation, quick-start workflows, reporting, configuration, and diagnostics guidance.
+
+---
+
 ## [1.2.1] - 2026-08-25
 
 ### Fixed
@@ -142,7 +280,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-## [1.1.0] - 2026-08-24
+## [1.1.0]
 
 ### Added
 
@@ -241,6 +379,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+[1.3.0]: https://github.com/unhield/limoxel/releases/tag/v1.3.0
+[1.2.1]: https://github.com/unhield/limoxel/releases/tag/v1.2.1
 [1.2.0]: https://github.com/unhield/limoxel/releases/tag/v1.2.0
 [1.1.0]: https://github.com/unhield/limoxel/releases/tag/v1.1.0
 [1.0.0]: https://github.com/unhield/limoxel/releases/tag/v1.0.0
