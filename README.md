@@ -4,7 +4,7 @@
 
 ### Engineering Knowledge Infrastructure
 
-**A production-grade platform for repository analysis, language processing, extensibility, and engineering intelligence.**
+**A production-grade platform for understanding, analyzing, navigating, and reporting on software repositories.**
 
 <br>
 
@@ -26,7 +26,7 @@
 >
 > **Limoxel is an Engineering Knowledge Infrastructure (EKI).**
 >
-> It provides a stable engineering foundation for understanding software repositories through modular platform components, deterministic architecture, structured repository knowledge, and engineering intelligence.
+> Limoxel helps developers, architects, and engineering teams understand software repositories through deterministic repository analysis, structured repository knowledge, engineering intelligence, and a practical command-line interface.
 
 ---
 
@@ -34,17 +34,21 @@
 <summary><strong>Table of Contents</strong></summary>
 
 - [Overview](#overview)
-- [Engineering Philosophy](#engineering-philosophy)
+- [What Limoxel Does](#what-limoxel-does)
+- [Who It Is For](#who-it-is-for)
 - [Architecture at a Glance](#architecture-at-a-glance)
-- [Engineering Foundation](#engineering-foundation)
-- [Core Platform Components](#core-platform-components)
-- [Repository Capabilities](#repository-capabilities)
+- [Repository Analysis](#repository-analysis)
 - [Engineering Intelligence](#engineering-intelligence)
-- [Engineering Characteristics](#engineering-characteristics)
+- [Command-Line Interface](#command-line-interface)
+- [Output and Reporting](#output-and-reporting)
+- [Configuration](#configuration)
+- [Logging and Diagnostics](#logging-and-diagnostics)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Common Workflows](#common-workflows)
 - [Validation](#validation)
-- [Repository Organization](#repository-organization)
-- [Getting Started](#getting-started)
 - [Project Documentation](#project-documentation)
+- [Repository Organization](#repository-organization)
 - [Current Release](#current-release)
 - [Contributing](#contributing)
 - [License](#license)
@@ -56,40 +60,116 @@
 
 # Overview
 
-Software repositories are engineering systems composed of source code, project structures, documentation, programming languages, dependencies, and architectural relationships.
+Software repositories are engineering systems made up of source code, files, packages, modules, dependencies, configuration, documentation, symbols, and relationships.
 
-Limoxel establishes a unified engineering platform capable of understanding these systems through a modular, production-oriented architecture.
+Understanding a large repository requires more than searching files. Developers often need to answer questions such as:
 
-Rather than treating repository analysis as a collection of isolated tools, Limoxel provides a cohesive engineering foundation together with deterministic repository capabilities for discovering, indexing, analyzing, modeling, navigating, and querying software repositories.
+- What is inside this repository?
+- Which packages and modules depend on each other?
+- Where is a symbol defined?
+- Where is a symbol used?
+- Which components depend on a changed package?
+- How are modules and packages connected?
+- What are the important architectural relationships?
+- Where are potential dependency, quality, or structural problems?
+- What could be affected by a proposed change?
+- How can the resulting information be exported or shared?
 
-On top of this foundation, Limoxel provides engineering intelligence for interpreting repository relationships, analyzing architecture, reasoning over structured repository knowledge, identifying engineering risks, evaluating change impact, and generating actionable engineering insights.
+Limoxel provides a unified platform for answering these questions from structured repository information.
+
+It combines repository discovery, indexing, dependency analysis, source and symbol analysis, cross-reference analysis, search, knowledge graphs, engineering analysis, deterministic reasoning, reporting, and a developer-oriented CLI.
 
 ---
 
-# Engineering Philosophy
+# What Limoxel Does
 
-The engineering philosophy of Limoxel is founded on a single principle:
+Limoxel works from the repository itself and builds progressively richer information about the software system.
 
-> **A stable engineering foundation enables meaningful intelligence.**
+At a high level:
 
-The platform separates foundational engineering infrastructure from higher-level repository capabilities and intelligence.
+```text
+Repository
+    │
+    ▼
+Discovery
+    │
+    ▼
+Structure & Metadata
+    │
+    ▼
+Indexing & Source Analysis
+    │
+    ▼
+Dependencies & Cross-References
+    │
+    ▼
+Repository Knowledge
+    │
+    ├── Search & Navigation
+    ├── Knowledge Graphs
+    ├── Engineering Analysis
+    ├── Change Impact
+    ├── Recommendations
+    └── Reports & Exports
+```
 
-This approach preserves architectural consistency, minimizes unnecessary coupling, and allows engineering analysis to operate on structured repository knowledge rather than bypassing established platform boundaries.
+The result is a structured view of the repository that can be queried, explored, analyzed, and exported.
 
-Limoxel is designed around:
+---
 
-- Deterministic behavior
-- Explicit engineering contracts
-- Structured repository knowledge
-- Bounded capabilities
-- Evidence-based analysis
-- Stable interfaces
-- Clear separation of responsibilities
-- Long-term maintainability
+# Who It Is For
+
+Limoxel is designed primarily for people who need to understand software systems rather than merely edit individual files.
+
+### Developers
+
+Use Limoxel to:
+
+- Explore unfamiliar repositories
+- Find symbols, packages, modules, and files
+- Trace references and dependencies
+- Navigate callers and callees
+- Inspect repository structure
+- Investigate configuration and documentation
+- Understand potential change impact
+- Diagnose repository or runtime issues
+
+### Software Architects
+
+Use Limoxel to:
+
+- Examine package and module relationships
+- Explore dependency graphs
+- Inspect architectural boundaries
+- Analyze coupling and structure
+- Generate architecture-oriented reports
+- Investigate repository-wide relationships
+
+### Engineering Leads
+
+Use Limoxel to:
+
+- Produce repository health information
+- Review structural and dependency risks
+- Generate engineering reports
+- Examine change impact
+- Support technical decision-making with repository evidence
+
+### DevOps and Platform Engineers
+
+Use Limoxel to:
+
+- Run repository analysis in automated workflows
+- Produce machine-readable output
+- Validate repository characteristics
+- Integrate analysis into development pipelines
+- Collect operational diagnostics
 
 ---
 
 # Architecture at a Glance
+
+Limoxel is organized around clear responsibilities.
 
 ```text
                            User
@@ -98,306 +178,629 @@ Limoxel is designed around:
                     Command-Line Interface
                              │
                              ▼
-                     Engine Coordination
+                    Engine Coordination
                              │
                              ▼
                   Platform Infrastructure
                              │
-          ┌──────────────────┼──────────────────┐
-          ▼                  ▼                  ▼
-      Workspace /       Repository /       Language /
-        Project          Filesystem          Parser /
-                                           Extension
-          │                  │                  │
-          └──────────────────┼──────────────────┘
+            ┌────────────────┼────────────────┐
+            ▼                ▼                ▼
+       Workspace         Repository        Language
+       & Project        & Filesystem       & Parser
+            │                │                │
+            └────────────────┼────────────────┘
                              ▼
                   Repository Capabilities
                              │
-        ┌────────────┬───────┼───────┬────────────┐
-        ▼            ▼       ▼       ▼            ▼
-    Discovery    Structure  Indexing Analysis   Search
-        │            │       │       │            │
-        └────────────┴───────┼───────┴────────────┘
+       ┌────────────┬────────┼────────┬────────────┐
+       ▼            ▼        ▼        ▼            ▼
+   Discovery     Structure Indexing Analysis     Search
+       │            │        │        │            │
+       └────────────┴────────┼────────┴────────────┘
                              ▼
-                  Repository Knowledge
+                   Repository Knowledge
                              │
                              ▼
                   Engineering Intelligence
                              │
-       ┌────────────┬────────┼────────┬────────────┐
-       ▼            ▼        ▼        ▼            ▼
-    Semantic     Navigation Analysis  Reasoning  Insights
-    Analysis                & Health             & Impact
+       ┌────────────┬───────┼────────┬────────────┐
+       ▼            ▼       ▼        ▼            ▼
+    Semantic    Navigation Analysis Reasoning   Insights
 ```
 
-Repository capabilities and engineering intelligence build on the established Limoxel foundation rather than replacing its domain models or core infrastructure.
+The command-line layer provides the user-facing interface, while the underlying platform and repository capabilities provide the data and services used by higher-level analysis.
 
 ---
 
-# Engineering Foundation
+# Repository Analysis
 
-The engineering foundation of Limoxel establishes the permanent core of the platform.
+Limoxel provides structured repository-analysis capabilities for discovering and understanding software systems.
 
-It provides the production infrastructure required for repository analysis through modular engineering systems, well-defined package responsibilities, deterministic execution, and comprehensive validation.
+### Repository Discovery
 
-The foundation provides the platform services required by repository capabilities and higher-level engineering intelligence.
+- Repository boundary detection
+- File discovery
+- Exclusion handling
+- Language identification
+- Repository metadata collection
+- Deterministic file enumeration
 
-Every production component contributes a distinct engineering responsibility and collaborates through clearly defined architectural boundaries.
+### Repository Structure
 
----
+- Directory structure
+- Packages
+- Modules
+- Configuration
+- Documentation
+- Repository organization
+- Repository statistics
 
-# Core Platform Components
+### Source Analysis
 
-The engineering foundation is organized into specialized production components.
+- Source indexing
+- AST analysis
+- Symbol extraction
+- Symbol relationships
+- Type and interface information
+- Cross-reference analysis
 
-| Component | Responsibility |
-|-----------|----------------|
-| **CLI** | Application entry point, command processing, and execution control |
-| **Engine** | Execution orchestration, workflow coordination, and processing pipeline management |
-| **Workspace** | Workspace initialization and execution context management |
-| **Repository** | Repository representation, repository-level coordination, and repository context |
-| **Project** | Project abstraction and project lifecycle management |
-| **Filesystem** | File discovery, ignore processing, filesystem abstraction, and repository traversal |
-| **Language** | Programming language registration, discovery, metadata, and lifecycle management |
-| **Parser** | Parser registration, parsing pipeline, execution, and parser lifecycle management |
-| **Extension** | Extension registration, discovery, validation, isolation, and lifecycle management |
-| **Platform** | Bootstrap, runtime, configuration, lifecycle, logging, registry, events, and shared infrastructure |
+### Dependency Analysis
 
----
+- Internal dependencies
+- External dependencies
+- Dependency relationships
+- Dependency graphs
+- Circular dependency detection
+- Dependency-chain traversal
 
-# Repository Capabilities
+### Repository Search
 
-Limoxel provides bounded repository-analysis capabilities that build on the engineering foundation.
+Search across supported repository information including:
 
-| Capability | Responsibility |
-|------------|----------------|
-| **Repository Discovery** | Establish repository boundaries, discover files, apply exclusion rules, identify languages, and collect deterministic metadata |
-| **Repository Structure** | Represent directories, packages, modules, configuration, documentation, and repository organization |
-| **Dependency Analysis** | Model internal and external dependency relationships and dependency graphs |
-| **Source Indexing** | Index source files, packages, file relationships, metadata, and repository statistics |
-| **AST & Symbol Analysis** | Parse supported source code and expose structured symbols and symbol relationships |
-| **Cross-Reference Analysis** | Resolve repository relationships such as references, callers, callees, implementations, and dependencies |
-| **Repository Knowledge Graph** | Represent repository entities and relationships as a unified graph with traversal and query support |
-| **Repository Query APIs** | Provide stable internal services for repository, symbol, graph, and search operations |
-| **Repository Search** | Search repository symbols, files, packages, documentation, configuration, and supported fuzzy matches |
-
-These capabilities provide the structured repository knowledge consumed by higher-level engineering intelligence.
+- Symbols
+- Types
+- Functions
+- Packages
+- Modules
+- Files
+- Dependencies
+- Documentation
+- Configuration
 
 ---
 
 # Engineering Intelligence
 
-Limoxel extends repository analysis with deterministic engineering intelligence built on structured repository knowledge.
+Limoxel extends repository analysis with deterministic engineering intelligence.
 
-The intelligence layer interprets repository entities and relationships to provide deeper engineering understanding without requiring probabilistic AI systems.
+The intelligence capabilities operate on structured repository information to provide deeper understanding without requiring probabilistic AI to interpret the repository.
 
-## Semantic Intelligence
+## Semantic Understanding
 
-Semantic intelligence provides structured understanding of repository entities beyond their raw syntax.
+Limoxel can represent and analyze:
 
-It includes:
+- Repositories
+- Packages
+- Modules
+- Symbols
+- Types
+- Functions
+- Interfaces
+- Variables
+- Scope
+- Ownership
+- Visibility
+- Semantic relationships
 
-- Repository semantic models
-- Package semantic models
-- Symbol semantic models
-- Type resolution
-- Interface resolution
-- Function and variable semantics
-- Generic type handling
-- Scope resolution
-- Symbol ownership
-- Symbol visibility
-- Semantic validation
+## Repository Relationships
 
----
+Limoxel can analyze relationships across:
 
-## Cross-Repository Intelligence
-
-Limoxel can analyze relationships across repository boundaries and workspace structures.
-
-It includes:
-
-- Cross-file analysis
-- Cross-package analysis
-- Cross-module analysis
-- Workspace relationships
-- Shared dependencies
-- Shared configuration
-- Package contracts
-- Internal and public API relationships
-- Repository evolution analysis
-
----
+- Files
+- Packages
+- Modules
+- Workspaces
+- Dependencies
+- Configuration
+- APIs
+- Repository history and evolution
 
 ## Engineering Navigation
 
-Engineering navigation provides deterministic traversal across repository assets and relationships.
+Navigation capabilities include:
 
-It includes:
-
-- Definition navigation
-- Declaration navigation
-- Implementation navigation
-- Reference lookup
-- Usage lookup
-- Reverse dependency lookup
-- Symbol hierarchy
-- Type hierarchy
-- Interface hierarchy
-- Package hierarchy
-- Call hierarchy
-- Dependency-chain traversal
-
----
+- Definitions
+- Declarations
+- Implementations
+- References
+- Usages
+- Reverse dependencies
+- Symbol hierarchies
+- Type hierarchies
+- Interface hierarchies
+- Package hierarchies
+- Call hierarchies
+- Dependency chains
 
 ## Engineering Analysis
 
-Limoxel analyzes repository structure and engineering quality through structured repository relationships.
+Limoxel can analyze repository characteristics including:
 
-Analysis capabilities include:
-
-- Code quality analysis
-- Dead-code detection
-- Unused import and export analysis
-- Duplicate logic detection
-- Large-file and large-function analysis
-- Dependency analysis
-- Circular dependency detection
-- Layer violation detection
-- Coupling analysis
-- Architecture analysis
-- Module boundary analysis
-- Layer consistency analysis
-- Package cohesion analysis
-- Configuration analysis
-- Repository health analysis
-
-Repository health can incorporate engineering, architecture, documentation, testing, and maintainability characteristics.
-
----
-
-## Knowledge Graph Intelligence
-
-The repository knowledge graph provides a structured model for engineering reasoning.
-
-The intelligence layer enriches the graph with:
-
-- Semantic relationships
-- Ownership relationships
-- Dependency relationships
-- Documentation relationships
-- Configuration relationships
-
-Graph reasoning supports:
-
-- Relationship inference
-- Dependency inference
-- Ownership inference
-- Architecture inference
-- Context generation
-- Knowledge consistency validation
-- Relationship validation
-- Graph completeness validation
-
-Repository context can be generated at multiple levels, including:
-
-- Repository
-- Package
-- Symbol
-- Module
-- Architecture
-
-Engineering insights can cover:
-
-- Complexity
+- Code quality
+- Dead code
+- Unused imports and exports
+- Duplicate logic
+- Large files
+- Large functions
 - Dependencies
+- Circular dependencies
+- Layer relationships
+- Coupling
 - Architecture
-- Repository growth
-- Engineering risk
+- Module boundaries
+- Package cohesion
+- Configuration
+- Repository health
+
+## Change Impact and Recommendations
+
+Limoxel can reason about potential engineering consequences of changes, including:
+
+- Symbol impact
+- Package impact
+- Module impact
+- Repository impact
+- Dependency impact
+- API changes
+- Breaking changes
+- Refactoring opportunities
+- Compatibility considerations
+- Dependency recommendations
+- Architecture recommendations
+- Performance recommendations
+- Repository organization recommendations
+
+Results are based on available repository evidence and are designed to remain deterministic and explainable.
 
 ---
 
-## Deterministic Reasoning
+# Command-Line Interface
 
-Limoxel provides deterministic engineering reasoning over structured repository knowledge.
+Limoxel provides a native command-line interface for interactive repository exploration, automation, analysis, reporting, and diagnostics.
 
-Reasoning capabilities include:
+The general form is:
 
-- Change-impact analysis
-- Symbol impact analysis
-- Package impact analysis
-- Module impact analysis
-- Repository impact analysis
-- Dependency impact analysis
-- Refactoring analysis
-- Safe rename analysis
-- Safe move analysis
-- Safe extraction analysis
-- Safe deletion analysis
-- Refactoring risk assessment
-- Breaking-change detection
-- API change analysis
-- Package change analysis
-- Symbol removal analysis
-- Interface change analysis
-- Version compatibility analysis
-- Engineering recommendations
+```text
+limoxel [global-options] <command> <subcommand> [arguments] [options]
+```
 
-Recommendations can address:
+The CLI is organized around practical workflows rather than requiring users to interact directly with internal packages.
 
-- Dependencies
-- Architecture
-- Performance
-- Repository organization
-- Engineering quality
+## Repository Operations
 
-The reasoning system is designed to produce deterministic results from available repository evidence.
+Use repository commands to establish and inspect the working repository context.
+
+Examples:
+
+```bash
+limoxel init
+limoxel open /path/to/project
+limoxel scan
+limoxel analyze
+limoxel validate
+limoxel reload
+limoxel info
+limoxel statistics
+limoxel close
+```
+
+## Search
+
+Search repository information from the command line:
+
+```bash
+limoxel search symbol HandleRequest
+limoxel search package api
+limoxel search module internal
+limoxel search file "*.go"
+limoxel search dependency
+limoxel search doc authentication
+limoxel search config
+```
+
+## Engineering Analysis
+
+Inspect repository structure and relationships:
+
+```bash
+limoxel intel inspect HandleRequest
+limoxel intel explain
+limoxel intel dependencies
+limoxel intel health
+limoxel intel impact HandleRequest
+limoxel intel navigate HandleRequest
+limoxel intel recommendations
+```
+
+## Knowledge Graphs
+
+Explore repository relationships as graphs:
+
+```bash
+limoxel graph repo
+limoxel graph package
+limoxel graph dependency
+limoxel graph call HandleRequest
+limoxel graph module
+limoxel graph symbol HandleRequest
+```
+
+## Reports
+
+Generate higher-level repository reports:
+
+```bash
+limoxel report summary
+limoxel report repository
+limoxel report architecture
+limoxel report dependency
+limoxel report health
+```
+
+## Graph and Diagram Export
+
+Export repository relationships for use outside the terminal:
+
+```bash
+limoxel export graph
+limoxel export diagram architecture
+limoxel export diagram call
+limoxel export diagram package
+```
+
+Supported export formats include Mermaid, Graphviz/DOT, SVG, PNG, JSON, YAML, and interactive output where supported by the selected export operation.
+
+## Configuration
+
+Manage Limoxel configuration from the CLI:
+
+```bash
+limoxel config list
+limoxel config get repository.root
+limoxel config set output.format json
+limoxel config unset output.format
+limoxel config validate
+limoxel config init
+limoxel config profile list
+```
+
+Configuration can be supplied through the supported configuration file and command-line options.
+
+## Diagnostics and Health
+
+Inspect operational information when troubleshooting:
+
+```bash
+limoxel log
+limoxel diag
+limoxel health
+limoxel debug trace
+limoxel debug dump
+limoxel profile stats
+```
+
+## Interactive Shell
+
+Limoxel also provides a stateful interactive shell:
+
+```bash
+limoxel interactive
+```
+
+Example:
+
+```text
+limoxel> open /path/to/project
+limoxel> scan
+limoxel> analyze
+limoxel> search symbol HandleRequest
+limoxel> intel explain
+limoxel> report summary
+limoxel> exit
+```
+
+For the complete command reference, option semantics, configuration behavior, logging, diagnostics, workflows, troubleshooting, and developer guidance, see:
+
+`docs/06_cli/05_CLI_User_and_Developer_Guide.md`
+
+The detailed CLI specification documents are also available under:
+
+```text
+docs/06_cli/
+├── 01_Command_Line_Interface.md
+├── 02_Output_and_Reporting.md
+├── 03_Configuration_System.md
+├── 04_Logging_and_Diagnostics.md
+└── 05_CLI_User_and_Developer_Guide.md
+```
 
 ---
 
-# Engineering Characteristics
+# Output and Reporting
 
-<table>
-<tr>
-<td width="50%" valign="top">
+Limoxel supports both human-readable and machine-readable output.
 
-### Architecture
+Depending on the command, output can be represented as:
 
-- Modular engineering design
-- Deterministic package boundaries
-- Clear separation of concerns
-- Layered platform architecture
-- Extensible engineering model
-- Stable engineering contracts
-- Bounded repository capabilities
-- Structured intelligence layer
+- Text
+- JSON
+- YAML
+- TOML
+- XML
+- CSV
+- Markdown
+- HTML
+- PDF
+- Mermaid
+- Graphviz/DOT
+- SVG
+- PNG
+- Interactive output
 
-</td>
+Global output controls include:
 
-<td width="50%" valign="top">
+```bash
+limoxel --format json <command>
+limoxel --format yaml <command>
+limoxel --json <command>
+limoxel --yaml <command>
+```
 
-### Engineering Quality
+For commands that support direct file output:
 
-- Documentation-first development
-- Enterprise repository organization
-- Comprehensive validation strategy
-- Runtime verification
-- Architecture verification
-- Deterministic repository analysis
-- Structured engineering reasoning
-- Stable API contracts
+```bash
+limoxel report summary --format markdown --output report.md
+limoxel export graph --format mermaid --output graph.mmd
+```
 
-</td>
-</tr>
-</table>
+For commands that write to standard output, normal shell redirection can also be used:
+
+```bash
+limoxel search symbol HandleRequest --format json > result.json
+```
+
+---
+
+# Configuration
+
+Limoxel supports configuration for repository analysis, output behavior, logging, diagnostics, and performance.
+
+Configuration can cover areas such as:
+
+- Repository root
+- Repository indexing behavior
+- Excluded paths
+- Analysis depth
+- Analysis strictness
+- Output format
+- Output behavior
+- Logging level
+- Logging format
+- Log file destination
+- Worker count
+- Operation timeouts
+- Named profiles
+
+A configuration file can be initialized with:
+
+```bash
+limoxel config init
+```
+
+The detailed configuration behavior is documented in:
+
+`docs/06_cli/03_Configuration_System.md`
+
+---
+
+# Logging and Diagnostics
+
+Limoxel includes operational logging and diagnostic facilities intended for both local development and automated environments.
+
+Supported functionality includes:
+
+- Structured log records
+- Multiple log levels
+- Text and JSON log output
+- Log-file output
+- Diagnostic collection
+- Runtime health checks
+- Debug state information
+- Execution tracing
+- CPU profiling
+- Memory profiling
+- Resource statistics
+
+Common diagnostic commands include:
+
+```bash
+limoxel log
+limoxel diag
+limoxel health
+limoxel debug trace
+limoxel debug dump
+limoxel profile stats
+```
+
+Detailed behavior is documented in:
+
+`docs/06_cli/04_Logging_and_Diagnostics.md`
+
+---
+
+# Installation
+
+Limoxel is implemented in Go and can be built directly from source.
+
+## Prerequisites
+
+| Requirement | Version |
+|-------------|---------|
+| Go | 1.26.5 or later |
+| Git | Current stable release recommended |
+| Operating System | Linux, macOS, or Windows |
+
+The official release builds target supported desktop/server platforms and architectures provided by the project release process.
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/unhield/limoxel.git
+cd limoxel
+```
+
+## Build from Source
+
+```bash
+go build -o bin/limoxel ./cmd/limoxel
+```
+
+On Windows:
+
+```powershell
+go build -o bin\limoxel.exe .\cmd\limoxel
+```
+
+## Verify the Build
+
+```bash
+limoxel version
+```
+
+You can also run the executable directly from the repository:
+
+```bash
+go run ./cmd/limoxel version
+```
+
+---
+
+# Quick Start
+
+Once Limoxel is available on your PATH, point it at a repository and begin with discovery.
+
+## 1. Inspect a Repository
+
+```bash
+limoxel info --repo /path/to/project
+```
+
+## 2. Scan and Analyze
+
+```bash
+limoxel scan --repo /path/to/project
+limoxel analyze --repo /path/to/project
+```
+
+## 3. Search the Repository
+
+```bash
+limoxel search symbol MyFunction --repo /path/to/project
+```
+
+## 4. Inspect Relationships
+
+```bash
+limoxel intel dependencies --repo /path/to/project
+limoxel graph package --repo /path/to/project
+```
+
+## 5. Generate a Report
+
+```bash
+limoxel report summary --repo /path/to/project
+```
+
+## 6. Produce Machine-Readable Output
+
+```bash
+limoxel search symbol MyFunction \
+  --repo /path/to/project \
+  --format json
+```
+
+---
+
+# Common Workflows
+
+## Explore an Unfamiliar Repository
+
+```bash
+limoxel open /path/to/project
+limoxel scan
+limoxel analyze
+limoxel info
+limoxel statistics
+```
+
+Then search and navigate:
+
+```bash
+limoxel search symbol MyFunction
+limoxel intel navigate MyFunction
+limoxel intel dependencies
+```
+
+## Investigate Architecture
+
+```bash
+limoxel intel explain
+limoxel graph package
+limoxel graph module
+limoxel report architecture
+```
+
+## Investigate Dependencies
+
+```bash
+limoxel intel dependencies
+limoxel graph dependency
+limoxel report dependency
+```
+
+## Investigate a Potential Change
+
+```bash
+limoxel intel impact MyFunction
+limoxel intel navigate MyFunction
+limoxel intel recommendations
+```
+
+## Generate Reports for Automation
+
+```bash
+limoxel report summary --format json --output summary.json
+limoxel report health --format json --output health.json
+```
+
+## Diagnose Operational Problems
+
+```bash
+limoxel health
+limoxel diag
+limoxel log
+limoxel debug dump
+```
+
+For automated environments, prefer structured output formats such as JSON or YAML where machine processing is required.
 
 ---
 
 # Validation
 
-Limoxel is validated through automated testing, static analysis, build verification, repository-level checks, and capability-specific validation.
+Limoxel is validated through multiple layers of automated verification.
 
-Validation covers:
+Validation includes:
 
 - Unit testing
 - Integration testing
@@ -409,184 +812,47 @@ Validation covers:
 - Repository integration
 - Cross-package integration
 - Cross-module integration
-- Workspace integration
 - API integration
-- Performance characteristics
 - Graph traversal
 - Search behavior
-- Repository isolation
 - Input validation
-- Graph integrity
-- Resource-exhaustion handling
 - Error handling
 - Documentation integrity
+- Performance testing
 
-Engineering intelligence is additionally validated across:
-
-- Semantic analysis
-- Navigation
-- Engineering analysis
-- Knowledge graph operations
-- Deterministic reasoning
-- Change-impact analysis
-- Recommendation behavior
-- Regression scenarios
-- False-positive scenarios
-- False-negative scenarios
-- Performance benchmarks
-
----
-
-> [!NOTE]
->
-> Limoxel's engineering foundation is designed to remain stable while repository capabilities and intelligence operate through clearly defined boundaries.
-
----
-
-# Repository Organization
-
-The Limoxel repository follows a responsibility-oriented organizational model.
-
-Production implementation, engineering documentation, executable entry points, repository-level testing, and repository metadata remain physically separated to preserve clarity, maintainability, and long-term scalability.
-
-```text
-limoxel/
-│
-├── .github/                 # Repository automation & workflows
-├── cmd/                     # Executable entry points
-├── docs/                    # Engineering documentation
-├── internal/                # Internal implementation
-│   └── capabilities/        # Repository and intelligence capabilities
-├── tests/                   # Testing infrastructure
-│
-├── CHANGELOG.md             # Release history
-├── CODEOWNERS               # Repository ownership
-├── CODE_OF_CONDUCT.md       # Community guidelines
-├── CONTRIBUTING.md          # Contribution guide
-├── LICENSE                  # MIT License
-├── README.md                # Project overview
-├── SECURITY.md              # Security policy
-├── go.mod                   # Go module definition
-└── go.sum                   # Dependency checksums
-```
-
-Engineering documentation is maintained under:
-
-```text
-docs/
-├── 01_foundation/
-├── 02_architecture/
-├── 03_engineering/
-├── 04_repository/
-└── 05_intelligence/
-```
-
-The complete repository organization, directory responsibilities, package responsibilities, engineering conventions, and repository governance are documented in:
-
-`docs/01_foundation/12_Repository_Structure.md`
-
----
-
-# Getting Started
-
-Limoxel is built using the Go programming language and follows the standard Go module workflow.
-
-The repository is organized to provide a deterministic development experience with minimal setup requirements.
-
-## Prerequisites
-
-| Requirement | Version |
-|-------------|---------|
-| Go | 1.26.5 or later |
-| Git | Latest stable release |
-| Operating System | Linux, macOS, or Windows |
-
----
-
-## Clone the Repository
-
-Clone the repository and enter the project directory.
-
-```bash
-git clone https://github.com/unhield/limoxel.git
-
-cd limoxel
-```
-
----
-
-## Install Dependencies
-
-```bash
-go mod tidy
-go mod verify
-```
-
----
-
-## Build
-
-Compile the production executable:
-
-```bash
-go build ./...
-```
-
-Or build the executable directly:
-
-```bash
-go build -o limoxel ./cmd/limoxel
-```
-
----
-
-## Run
-
-Execute Limoxel using the production entry point:
-
-```bash
-go run ./cmd/limoxel
-```
-
-Or execute the compiled binary:
-
-```bash
-./limoxel
-```
-
----
-
-# Validation
-
-Run the standard repository validation commands:
+The standard Go validation commands are:
 
 ```bash
 go test ./...
 go vet ./...
 go build ./...
-go mod tidy
 go mod verify
 ```
 
-For capability-specific validation, use the procedures documented within the relevant engineering documentation.
+Formatting can be checked with:
+
+```bash
+gofmt -l .
+```
+
+Repository workflows also provide automated CI, dependency review, documentation checks, security analysis, and release automation where applicable.
 
 ---
 
 # Project Documentation
 
-Engineering documentation is maintained as a first-class artifact of the repository.
-
-Documentation is organized into dedicated engineering categories.
+Limoxel documentation is organized by subject so users and developers can find the appropriate level of detail without having to read the entire project.
 
 | Documentation | Purpose |
 |---------------|---------|
-| **Foundation** | Engineering principles, repository organization, platform philosophy, and permanent engineering contracts |
-| **Architecture** | Component boundaries, dependency rules, package structure, infrastructure, runtime, communication, and system design |
-| **Engineering** | Implementation specifications, engineering contracts, validation, development standards, and operational guidance |
-| **Repository** | Repository discovery, structure, dependency, indexing, AST, symbols, cross-reference, graph, search, API, and repository-analysis specifications |
-| **Intelligence** | Semantic intelligence, cross-repository analysis, engineering navigation, engineering analysis, knowledge graph intelligence, deterministic reasoning, impact analysis, and recommendations |
+| **Foundation** | Project principles, goals, engineering philosophy, repository organization, and contribution guidance |
+| **Architecture** | Component boundaries, dependency rules, interfaces, communication, extensions, and system structure |
+| **Engineering** | Runtime, package structure, contracts, bootstrap, and implementation guidance |
+| **Repository** | Discovery, metadata, language detection, dependencies, indexing, symbols, cross-references, graphs, queries, and search |
+| **Intelligence** | Semantic analysis, cross-repository analysis, navigation, engineering analysis, knowledge graphs, reasoning, and impact analysis |
+| **CLI** | Command usage, output, configuration, logging, diagnostics, workflows, troubleshooting, and developer guidance |
 
-Complete documentation is available under:
+Documentation is available under:
 
 ```text
 docs/
@@ -594,34 +860,95 @@ docs/
 ├── 02_architecture/
 ├── 03_engineering/
 ├── 04_repository/
-└── 05_intelligence/
+├── 05_intelligence/
+└── 06_cli/
+```
+
+For users working primarily with the command line, start with:
+
+`docs/06_cli/05_CLI_User_and_Developer_Guide.md`
+
+For the underlying CLI behavior and configuration details:
+
+```text
+docs/06_cli/
+├── 01_Command_Line_Interface.md
+├── 02_Output_and_Reporting.md
+├── 03_Configuration_System.md
+└── 04_Logging_and_Diagnostics.md
+```
+
+---
+
+# Repository Organization
+
+The repository follows a responsibility-oriented structure.
+
+```text
+limoxel/
+│
+├── .github/                    # Repository automation and workflows
+├── cmd/                        # Executable entry points
+├── docs/                       # Project documentation
+├── internal/
+│   ├── capabilities/           # Repository and higher-level capabilities
+│   ├── cli/                    # CLI foundation
+│   ├── engine/                 # Execution engine
+│   ├── extension/              # Extension infrastructure
+│   ├── filesystem/             # Filesystem services
+│   ├── language/               # Language management
+│   ├── parser/                 # Parser infrastructure
+│   ├── platform/               # Shared platform services
+│   ├── project/                # Project management
+│   ├── repository/              # Repository foundation
+│   └── workspace/               # Workspace management
+│
+├── tests/                      # Integration testing
+│
+├── CHANGELOG.md                # Release history
+├── CODEOWNERS                  # Repository ownership
+├── CODE_OF_CONDUCT.md          # Community guidelines
+├── CONTRIBUTING.md             # Contribution guide
+├── LICENSE                     # MIT License
+├── README.md                   # Project overview
+├── SECURITY.md                 # Security policy
+├── go.mod                      # Go module definition
+└── go.sum                      # Dependency checksums
 ```
 
 ---
 
 # Current Release
 
-Limoxel provides a production engineering platform combining repository analysis with deterministic engineering intelligence.
+Limoxel currently provides a production-oriented platform combining repository analysis, engineering intelligence, reporting, and a comprehensive developer CLI.
 
 | Capability | Status |
 |------------|:------:|
 | Engineering Foundation | ✅ |
 | Platform Infrastructure | ✅ |
-| Repository Capabilities | ✅ |
-| Semantic Intelligence | ✅ |
-| Cross-Repository Intelligence | ✅ |
+| Repository Discovery | ✅ |
+| Repository Structure Analysis | ✅ |
+| Source Indexing | ✅ |
+| AST & Symbol Analysis | ✅ |
+| Dependency Analysis | ✅ |
+| Cross-Reference Analysis | ✅ |
+| Repository Knowledge Graph | ✅ |
+| Repository Search | ✅ |
+| Semantic Analysis | ✅ |
+| Cross-Repository Analysis | ✅ |
 | Engineering Navigation | ✅ |
 | Engineering Analysis | ✅ |
-| Knowledge Graph Intelligence | ✅ |
-| Deterministic Reasoning | ✅ |
 | Change-Impact Analysis | ✅ |
-| Refactoring Analysis | ✅ |
-| Breaking-Change Detection | ✅ |
 | Engineering Recommendations | ✅ |
+| Command-Line Interface | ✅ |
+| Configuration | ✅ |
+| Reporting & Export | ✅ |
+| Logging & Diagnostics | ✅ |
+| Interactive Shell | ✅ |
 | Engineering Documentation | ✅ |
-| Production Validation | ✅ |
+| Automated Validation | ✅ |
 
-Limoxel provides structured repository understanding across discovery, indexing, dependency analysis, AST and symbol analysis, cross-reference analysis, knowledge graph construction, semantic analysis, navigation, engineering analysis, deterministic reasoning, change-impact analysis, and engineering recommendations.
+For release history and version-specific changes, see `CHANGELOG.md`.
 
 ---
 
@@ -629,18 +956,20 @@ Limoxel provides structured repository understanding across discovery, indexing,
 
 Contributions are welcome and appreciated.
 
-Limoxel follows a **maintainer approval** model to preserve engineering quality, architectural consistency, repository organization, and long-term maintainability.
+Limoxel follows a maintainer-approval model to preserve engineering quality, architectural consistency, repository organization, and long-term maintainability.
 
-Every contribution is reviewed according to the project's engineering principles, engineering standards, documentation quality, and long-term direction.
+Every contribution is reviewed according to the project's engineering principles, implementation standards, documentation quality, and long-term direction.
 
-Submission of an Issue, Pull Request, or proposed enhancement does **not** guarantee acceptance.
+Submitting an Issue, Pull Request, or proposed enhancement does not guarantee acceptance.
 
 Before contributing, please read:
 
 - `CONTRIBUTING.md`
 - `CODE_OF_CONDUCT.md`
 
-If you plan to contribute a significant feature, architectural change, repository-wide improvement, or are unsure whether your proposal aligns with the engineering direction of Limoxel, please contact:
+For substantial features, architectural changes, or repository-wide improvements, please review the relevant documentation before beginning implementation.
+
+If you are unsure whether a proposal aligns with the direction of Limoxel, contact:
 
 **hello.limoxel@gmail.com**
 
@@ -668,9 +997,18 @@ See the `LICENSE` file for the complete license text.
 
 # Acknowledgements
 
-Limoxel represents a long-term engineering initiative focused on building a stable and extensible foundation for repository understanding.
+Limoxel is a long-term engineering initiative focused on building a stable and extensible foundation for understanding software repositories.
 
-The project emphasizes engineering quality, architectural discipline, documentation-first development, deterministic analysis, structured repository knowledge, and maintainable engineering intelligence.
+The project emphasizes:
+
+- Engineering quality
+- Clear architecture
+- Deterministic analysis
+- Structured repository knowledge
+- Practical developer tooling
+- Documentation-first development
+- Maintainability
+- Explainable engineering analysis
 
 <div align="center">
 
