@@ -1,0 +1,28 @@
+version: 1.0.0
+active_profile: default
+general: {}
+repository:
+  exclude_patterns:     - .git
+    - vendor
+    - node_modules
+    - dist
+  indexing_mode: standard
+  max_file_size_mb: 10
+  root: .
+analysis:
+  max_depth: 15
+  rule_severity_threshold: info
+  strict_mode: false
+output:
+  color: true
+  file_overwrite: false
+  format: text
+  theme: dark
+logging:
+  format: text
+  level: info
+performance:
+  timeout_seconds: 60
+  workers: 4
+profiles: {}
+custom: {}

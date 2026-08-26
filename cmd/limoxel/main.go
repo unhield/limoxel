@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	capcli "github.com/unhield/limoxel/internal/capabilities/cli"
 	"github.com/unhield/limoxel/internal/cli"
 )
 
@@ -25,4 +26,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error initializing CLI bootstrap: %v\n", err)
 		os.Exit(1)
 	}
+
+	app := capcli.NewApp()
+	exitCode := app.Run(os.Args[1:])
+	os.Exit(exitCode)
 }
