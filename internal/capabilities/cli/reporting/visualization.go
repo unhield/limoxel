@@ -76,8 +76,6 @@ func (e *VisualizationExporter) ExportMermaid(data *GraphVisualData, w io.Writer
 		nodeID := sanitizeID(n.ID)
 		if n.Kind == "package" || n.Kind == "module" {
 			fmt.Fprintf(&sb, "  %s([\"%s\"])\n", nodeID, label)
-		} else if n.Kind == "symbol" {
-			fmt.Fprintf(&sb, "  %s[\"%s\"]\n", nodeID, label)
 		} else {
 			fmt.Fprintf(&sb, "  %s[\"%s\"]\n", nodeID, label)
 		}
