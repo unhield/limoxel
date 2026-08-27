@@ -3,6 +3,7 @@ package cli_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/unhield/limoxel/internal/capabilities/cli"
+	"github.com/unhield/limoxel/internal/version"
 )
 
 func setupTestRepo(t *testing.T) string {
@@ -108,7 +110,7 @@ func TestCLIFramework(t *testing.T) {
 		if code != 0 {
 			t.Errorf("got exit code %d, want 0", code)
 		}
-		if !strings.Contains(out, "limoxel version 1.3.0") {
+		if !strings.Contains(out, fmt.Sprintf("limoxel version %s", version.Version)) {
 			t.Errorf("unexpected version output: %s", out)
 		}
 
@@ -121,8 +123,8 @@ func TestCLIFramework(t *testing.T) {
 		if err := json.Unmarshal([]byte(out), &vMap); err != nil {
 			t.Fatalf("invalid json version output: %v (raw: %s)", err, out)
 		}
-		if vMap["version"] != "1.3.0" {
-			t.Errorf("got json version %q, want 1.3.0", vMap["version"])
+		if vMap["version"] != version.Version {
+			t.Errorf("got json version %q, want %s", vMap["version"], version.Version)
 		}
 	})
 
@@ -458,7 +460,7 @@ func TestInteractiveREPL(t *testing.T) {
 	}
 
 	out := stdout.String()
-	if !strings.Contains(out, "limoxel version 1.3.0") || !strings.Contains(out, "Goodbye!") {
+	if !strings.Contains(out, fmt.Sprintf("limoxel version %s", version.Version)) || !strings.Contains(out, "Goodbye!") {
 		t.Errorf("unexpected interactive output: %s", out)
 	}
 }

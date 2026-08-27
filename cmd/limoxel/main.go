@@ -6,10 +6,11 @@ import (
 
 	capcli "github.com/unhield/limoxel/internal/capabilities/cli"
 	"github.com/unhield/limoxel/internal/cli"
+	"github.com/unhield/limoxel/internal/version"
 )
 
 func main() {
-	cfg, err := cli.NewConfig("limoxel", "1.3.0", ".")
+	cfg, err := cli.NewConfig("limoxel", version.Version, ".")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating CLI config: %v\n", err)
 		os.Exit(1)

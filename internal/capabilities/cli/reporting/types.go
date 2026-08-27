@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/unhield/limoxel/internal/version"
 )
 
 // Format represents supported presentation, structured, documentation, and visualization export formats.
@@ -114,7 +116,7 @@ func DefaultReportMetadata(title string, repType ReportType, repoName, rootPath 
 		RootPath:      rootPath,
 		GeneratedAt:   time.Now().UTC().Truncate(time.Second),
 		Generator:     "Limoxel Engineering Intelligence Platform",
-		Version:       "1.0.0",
+		Version:       version.Version,
 		Authoritative: true,
 	}
 }
