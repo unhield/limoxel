@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - Limoxel SDK</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <span>Limoxel SDK</span>
+        <span class="badge">v1.4.0</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html" class="active">Docs</a></li>
+        <li><a href="api-explorer.html">API Explorer</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <h1 style="color: var(--text-bright); margin-bottom: 1.5rem;">Developer Guide & Best Practices</h1>
+
+    <section class="card" style="margin-bottom: 2rem;">
+      <h3>1. Architecture & Design Principles</h3>
+      <p style="margin-top: 0.5rem;">
+        The Limoxel SDK exposes high-level, thread-safe public contracts that wrap underlying repository indexers, graph databases, and intelligence reasoning engines. Consumers interact solely with the <code>*sdk.Client</code> coordinator and its capability accessors.
+      </p>
+    </section>
+
+    <section class="card" style="margin-bottom: 2rem;">
+      <h3>2. Lifecycle & Resource Management</h3>
+      <p style="margin-top: 0.5rem;">
+        Always invoke <code>defer client.Close()</code> immediately after initializing a client. This releases file descriptor indexers, background worker pools, and memory caches cleanly.
+      </p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>client, err := sdk.New(sdk.WithWorkspace("/path/to/repo"))
+if err != nil {
+    return err
+}
+defer client.Close() // Release background workers and file handles</code>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 2rem;">
+      <h3>3. Context Cancellation & Timeouts</h3>
+      <p style="margin-top: 0.5rem;">
+        Every SDK method accepts a standard <code>context.Context</code>. For long-running operations like deep graph traversal or whole-repository health analysis, pass a context with a suitable timeout (e.g. 30s to 60s).
+      </p>
+    </section>
+
+    <section class="card" style="margin-bottom: 2rem;">
+      <h3>4. Error Handling & Semantic Categories</h3>
+      <p style="margin-top: 0.5rem;">
+        Limoxel errors conform to the <code>sdk.SDKError</code> interface. Inspect <code>sdkErr.Category()</code> to programmatically handle missing entities (<code>CategoryNotFound</code>), invalid arguments (<code>CategoryInvalidInput</code>), or lifecycle state issues (<code>CategoryInvalidState</code>).
+      </p>
+    </section>
+
+    <section class="card" style="margin-bottom: 2rem;">
+      <h3>5. Concurrency & Goroutine Safety</h3>
+      <p style="margin-top: 0.5rem;">
+        A single <code>*sdk.Client</code> instance is completely safe for concurrent access across multiple goroutines. You can share one client across HTTP request handlers or background workers without external mutex locking.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+  </footer>
+
+  <script src="js/portal.js"></script>
+</body>
+</html>

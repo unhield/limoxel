@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Limoxel SDK - Developer Portal</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <span>Limoxel SDK</span>
+        <span class="badge">v1.4.0</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="api-explorer.html">API Explorer</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Engineering Intelligence SDK for Go</h1>
+      <p>Programmatic access to repository indexing, knowledge graphs, architectural boundary analysis, semantic navigation, and deterministic change-impact reasoning.</p>
+      
+      <div class="hero-actions">
+        <a href="docs.html" class="btn btn-primary">Get Started</a>
+        <a href="api-explorer.html" class="btn btn-secondary">Explore APIs</a>
+      </div>
+
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>go get github.com/unhield/limoxel/sdk</code>
+      </div>
+    </section>
+
+    <section>
+      <h2 style="margin-bottom: 1rem; color: var(--text-bright);">Core Capabilities</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Repository & Search</h3>
+          <p>Index multi-language source trees, query symbol locations, and perform multi-domain repository search across files, packages, and symbols.</p>
+        </div>
+        <div class="card">
+          <h3>Knowledge Graph</h3>
+          <p>Traverse structural entity relationships, compute shortest path blast-radii, and export graphs to Mermaid and Graphviz DOT formats.</p>
+        </div>
+        <div class="card">
+          <h3>Architecture & Health</h3>
+          <p>Evaluate multidimensional health scores, inspect architectural layer boundaries, and detect circular package dependencies automatically.</p>
+        </div>
+        <div class="card">
+          <h3>Semantic Navigation</h3>
+          <p>Resolve symbol definitions, find all reference sites across the codebase, and compute incoming and outgoing call hierarchies.</p>
+        </div>
+        <div class="card">
+          <h3>Reasoning & Impact</h3>
+          <p>Predict blast-radius change impacts, assess semantic breaking changes, and receive automated refactoring safety advice.</p>
+        </div>
+        <div class="card">
+          <h3>Event Streaming</h3>
+          <p>Subscribe to real-time repository lifecycle, indexing progress, and analysis completion events via thread-safe Go channels.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top: 2rem;">
+      <h2 style="margin-bottom: 1rem; color: var(--text-bright);">Quickstart Snippet</h2>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+    ctx := context.Background()
+    client, err := sdk.OpenWorkspace(ctx, ".")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer client.Close()
+
+    health, _ := client.Analysis().RepositoryHealth(ctx)
+    fmt.Printf("Repository Health: %.1f/100 (Grade: %s)\n", health.OverallScore, health.Grade)
+}</code>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+  </footer>
+
+  <script src="js/portal.js"></script>
+</body>
+</html>

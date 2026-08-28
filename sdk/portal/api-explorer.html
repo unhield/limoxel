@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Explorer - Limoxel SDK</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <span>Limoxel SDK</span>
+        <span class="badge">v1.4.0</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="api-explorer.html" class="active">API Explorer</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <h1 style="color: var(--text-bright); margin-bottom: 1rem;">Public SDK Contracts & API Explorer</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Interactive catalog of all 11 public Go contracts exposed by the Limoxel SDK.</p>
+
+    <input type="text" id="search-filter" class="search-bar" placeholder="Filter contracts, methods, or signatures (e.g., 'Health', 'Graph', 'Navigate', 'Search')...">
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>RepositoryManagementContract <code>client.Repository()</code></h3>
+      <p>Lifecycle session management, repository metadata, quantitative metrics, and workspace reload.</p>
+      <div class="code-box">
+        <code>Open(ctx context.Context, path string) (*RepositoryInfo, error)
+Close(ctx context.Context) error
+Info(ctx context.Context) (*RepositoryInfo, error)
+State() RepositoryState
+Metadata(ctx context.Context) (*RepositoryMetadata, error)
+Statistics(ctx context.Context) (*RepositoryStatistics, error)
+Reload(ctx context.Context) error</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>FileContract <code>client.Files()</code></h3>
+      <p>File discovery, classification metadata, indexing status, and inter-file relationships.</p>
+      <div class="code-box">
+        <code>DiscoverFiles(ctx context.Context, filter FileFilter, opts PaginationOptions) ([]FileInfo, error)
+LookupFile(ctx context.Context, path string) (*FileInfo, error)
+GetFileMetadata(ctx context.Context, path string) (*FileMetadata, error)
+GetFileIndexStatus(ctx context.Context, path string) (*FileIndexStatus, error)
+GetFileRelationships(ctx context.Context, path string) ([]FileRelationship, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>PackageContract <code>client.Packages()</code></h3>
+      <p>Package discovery, hierarchy trees, dependent metrics, and package-to-package relationships.</p>
+      <div class="code-box">
+        <code>DiscoverPackages(ctx context.Context, filter PackageFilter, opts PaginationOptions) ([]PackageInfo, error)
+LookupPackage(ctx context.Context, pkgPathOrName string) (*PackageInfo, error)
+GetPackageStatistics(ctx context.Context, pkgPathOrName string) (*PackageStatistics, error)
+GetPackageHierarchy(ctx context.Context, pkgPathOrName string) (*PackageHierarchyNode, error)
+GetPackageRelationships(ctx context.Context, pkgPathOrName string) ([]PackageRelationship, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>SymbolContract <code>client.Symbols()</code></h3>
+      <p>Symbol lookup, inheritance hierarchy, call sites, and documentation extraction.</p>
+      <div class="code-box">
+        <code>LookupSymbol(ctx context.Context, symbolIDOrName string) (*SymbolInfo, error)
+SymbolHierarchy(ctx context.Context, symbolID string) (*SymbolHierarchyNode, error)
+SymbolReferences(ctx context.Context, symbolID string, opts PaginationOptions) ([]SymbolReference, error)
+SymbolDocumentation(ctx context.Context, symbolID string) (string, error)
+SymbolOwnership(ctx context.Context, symbolID string) (string, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>SearchContract <code>client.Search()</code></h3>
+      <p>Multi-domain unified search across symbols, packages, files, documentation, and configs.</p>
+      <div class="code-box">
+        <code>Search(ctx context.Context, q SearchQuery) (*SearchResult, error)
+SearchSymbols(ctx context.Context, query string, pagination PaginationOptions) (*SearchResult, error)
+SearchPackages(ctx context.Context, query string, pagination PaginationOptions) (*SearchResult, error)
+SearchFiles(ctx context.Context, pattern string, pagination PaginationOptions) (*SearchResult, error)
+SearchDocs(ctx context.Context, query string, pagination PaginationOptions) (*SearchResult, error)
+SearchConfigs(ctx context.Context, key string, pagination PaginationOptions) (*SearchResult, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>GraphContract <code>client.Graph()</code></h3>
+      <p>Knowledge graph traversal, path finding, relationship inspection, and Mermaid/DOT export.</p>
+      <div class="code-box">
+        <code>GraphInfo(ctx context.Context) (totalNodes int, totalEdges int, err error)
+GetNode(ctx context.Context, nodeID string) (*GraphNode, error)
+GetRelationship(ctx context.Context, relID string) (*GraphRelationship, error)
+TraverseNodes(ctx context.Context, startNodeID string, filter GraphFilter) ([]GraphNode, error)
+TraverseRelationships(ctx context.Context, startNodeID string, filter GraphFilter) ([]GraphRelationship, error)
+GetNeighbors(ctx context.Context, nodeID string, direction string, kinds ...string) ([]GraphNode, error)
+FindPaths(ctx context.Context, startID, endID string, maxDepth int) ([][]GraphNode, error)
+ExportGraph(ctx context.Context, filter GraphFilter, format GraphExportFormat) (*GraphExportResult, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>AnalysisContract <code>client.Analysis()</code></h3>
+      <p>Multi-dimensional health scoring, architecture layer boundaries, and dependency analysis.</p>
+      <div class="code-box">
+        <code>AnalyzeArchitecture(ctx context.Context, scope string) (*ArchitectureAnalysisResult, error)
+AnalyzeDependencies(ctx context.Context, scope string) (*DependencyAnalysisResult, error)
+RepositoryHealth(ctx context.Context) (*RepositoryHealthReport, error)
+AnalyzeQuality(ctx context.Context, scope string) (*CodeQualityReport, error)
+AnalyzeConfiguration(ctx context.Context) (*ConfigurationReport, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>NavigationContract <code>client.Navigation()</code></h3>
+      <p>Go-to-definition, reference resolution, and caller/callee call hierarchy graphs.</p>
+      <div class="code-box">
+        <code>GoToDefinition(ctx context.Context, symbolID string) (*DefinitionResult, error)
+FindReferences(ctx context.Context, symbolID string, includeDeclarations bool) (*ReferenceResult, error)
+CallHierarchy(ctx context.Context, symbolID string) (*CallHierarchyNode, error)
+SymbolHierarchy(ctx context.Context, symbolID string) (*NavSymbolHierarchyNode, error)
+EnrichContext(ctx context.Context, symbolID string) (*NavigationContextResult, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>ReasoningContract <code>client.Reasoning()</code></h3>
+      <p>Blast-radius impact analysis, breaking change assessment, and refactoring guidance.</p>
+      <div class="code-box">
+        <code>AnalyzeImpact(ctx context.Context, targetEntityID string) (*ImpactResult, error)
+GetRecommendations(ctx context.Context, targetEntityID string) (*RecommendationResult, error)
+AnalyzeBreakingChanges(ctx context.Context, targetEntityID string) (*BreakingChangeResult, error)
+RefactoringAdvice(ctx context.Context, targetEntityID string, newName string) (*RefactoringResult, error)
+EngineeringInsights(ctx context.Context) ([]EngineeringInsight, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>EventContract <code>client.Events()</code></h3>
+      <p>Real-time asynchronous event subscriptions, streaming channels, and event publication.</p>
+      <div class="code-box">
+        <code>Publish(ctx context.Context, evt Event) error
+Subscribe(ctx context.Context, eventType EventType, handler EventHandler) (Subscription, error)
+SubscribeAll(ctx context.Context, handler EventHandler) (Subscription, error)
+Events(ctx context.Context, eventType string) (&lt;-chan Event, error)</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>IntelligenceContract <code>client.Intelligence()</code></h3>
+      <p>Unified high-level facade across graph, analysis, navigation, reasoning, and event services.</p>
+      <div class="code-box">
+        <code>Graph() GraphContract
+Analysis() AnalysisContract
+Navigation() NavigationContract
+Reasoning() ReasoningContract
+Events() EventContract</code>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+  </footer>
+
+  <script src="js/portal.js"></script>
+</body>
+</html>

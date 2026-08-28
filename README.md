@@ -39,6 +39,7 @@
 - [Architecture at a Glance](#architecture-at-a-glance)
 - [Repository Analysis](#repository-analysis)
 - [Engineering Intelligence](#engineering-intelligence)
+- [SDK & Public API](#sdk--public-api)
 - [Command-Line Interface](#command-line-interface)
 - [Output and Reporting](#output-and-reporting)
 - [Configuration](#configuration)
@@ -361,6 +362,119 @@ Limoxel can reason about potential engineering consequences of changes, includin
 - Repository organization recommendations
 
 Results are based on available repository evidence and are designed to remain deterministic and explainable.
+
+---
+
+# SDK & Public API
+
+Limoxel provides a public Go SDK for applications and developer tooling that need to consume repository analysis and engineering intelligence programmatically.
+
+The canonical public package is:
+
+```go
+import "github.com/unhield/limoxel/sdk"
+```
+
+The SDK exposes public contracts for repository and intelligence capabilities without requiring consumers to depend directly on Limoxel's internal implementation packages.
+
+## Core SDK
+
+The Core SDK provides public access to:
+
+- Repository management and lifecycle
+- Repository metadata and statistics
+- File discovery, metadata, indexing status, and relationships
+- Package discovery, hierarchy, statistics, and relationships
+- Symbol lookup, references, hierarchy, documentation, and ownership
+- Multi-domain repository search
+
+## Intelligence SDK
+
+The Intelligence SDK provides public contracts for:
+
+- Knowledge graph access and traversal
+- Graph filtering and export
+- Architecture, dependency, quality, and health analysis
+- Definition, reference, symbol, and call navigation
+- Deterministic impact analysis and engineering reasoning
+- Engineering recommendations and insights
+- Repository and SDK lifecycle events
+- Unified request-based intelligence access
+
+## Compatibility
+
+The public SDK includes compatibility utilities for:
+
+- Semantic Versioning
+- API-change evaluation
+- Upgrade validation
+- Migration guidance
+- API deprecation tracking
+
+## Examples and Templates
+
+Runnable SDK examples are available under `sdk/examples/`, covering:
+
+- Basic SDK usage
+- Repository analysis
+- Knowledge graphs
+- Code navigation
+- Intelligence and reasoning
+- Event streaming
+
+Starter templates for common integration styles are available under `sdk/templates/`.
+
+## SDK Documentation
+
+The SDK documentation is available under:
+
+```text
+docs/07_sdk/
+├── 01_SDK_Foundation.md
+├── 02_Core_SDK.md
+├── 03_Intelligence_SDK.md
+└── 04_SDK_and_Public_API_User_Manual.md
+```
+
+For integration work, start with:
+
+`docs/07_sdk/04_SDK_and_Public_API_User_Manual.md`
+
+A minimal client can be initialized with:
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+	ctx := context.Background()
+
+	client, err := sdk.OpenWorkspace(ctx, ".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+
+	stats, err := client.Repository().Statistics(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("files=%d packages=%d symbols=%d",
+		stats.TotalFiles,
+		stats.TotalPackages,
+		stats.TotalSymbols,
+	)
+}
+```
+
+The SDK requires local filesystem access to the workspace being analyzed.
 
 ---
 
@@ -851,6 +965,7 @@ Limoxel documentation is organized by subject so users and developers can find t
 | **Repository** | Discovery, metadata, language detection, dependencies, indexing, symbols, cross-references, graphs, queries, and search |
 | **Intelligence** | Semantic analysis, cross-repository analysis, navigation, engineering analysis, knowledge graphs, reasoning, and impact analysis |
 | **CLI** | Command usage, output, configuration, logging, diagnostics, workflows, troubleshooting, and developer guidance |
+| **SDK** | Public SDK foundation, core SDK, intelligence SDK, compatibility, examples, templates, and public API usage |
 
 Documentation is available under:
 
@@ -861,12 +976,17 @@ docs/
 ├── 03_engineering/
 ├── 04_repository/
 ├── 05_intelligence/
-└── 06_cli/
+├── 06_cli/
+└── 07_sdk/
 ```
 
 For users working primarily with the command line, start with:
 
 `docs/06_cli/05_CLI_User_and_Developer_Guide.md`
+
+For SDK and Public API integration, start with:
+
+`docs/07_sdk/04_SDK_and_Public_API_User_Manual.md`
 
 For the underlying CLI behavior and configuration details:
 
@@ -903,6 +1023,8 @@ limoxel/
 │   ├── repository/              # Repository foundation
 │   └── workspace/               # Workspace management
 │
+├── sdk/                        # Public Go SDK, examples, templates, and supporting tooling
+│
 ├── tests/                      # Integration testing
 │
 ├── CHANGELOG.md                # Release history
@@ -920,7 +1042,7 @@ limoxel/
 
 # Current Release
 
-Limoxel currently provides a production-oriented platform combining repository analysis, engineering intelligence, reporting, and a comprehensive developer CLI.
+Limoxel 1.4.0 provides a production-oriented platform combining repository analysis, engineering intelligence, reporting, a comprehensive developer CLI, and a public Go SDK.
 
 | Capability | Status |
 |------------|:------:|
@@ -940,6 +1062,9 @@ Limoxel currently provides a production-oriented platform combining repository a
 | Engineering Analysis | ✅ |
 | Change-Impact Analysis | ✅ |
 | Engineering Recommendations | ✅ |
+| Public SDK & API Contracts | ✅ |
+| SDK Compatibility & Versioning | ✅ |
+| SDK Examples & Templates | ✅ |
 | Command-Line Interface | ✅ |
 | Configuration | ✅ |
 | Reporting & Export | ✅ |

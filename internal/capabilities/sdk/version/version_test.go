@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/unhield/limoxel/internal/capabilities/sdk/version"
+	canonversion "github.com/unhield/limoxel/internal/version"
 )
 
 func TestParseSemVer(t *testing.T) {
@@ -72,11 +73,15 @@ func TestNewSemVer(t *testing.T) {
 
 func TestCurrentVersion(t *testing.T) {
 	current := version.Current()
-	if current.Major != 1 || current.Minor != 3 || current.Patch != 0 {
-		t.Errorf("unexpected Current() version: %v", current)
+	expected, err := version.ParseSemVer(canonversion.Version)
+	if err != nil {
+		t.Fatalf("failed to parse canonical version: %v", err)
 	}
-	if current.String() != "1.3.0" {
-		t.Errorf("unexpected current string: %s", current.String())
+	if current != expected {
+		t.Errorf("expected Current() to equal canonical version %+v, got %+v", expected, current)
+	}
+	if current.String() != canonversion.Version {
+		t.Errorf("unexpected current string: %s, want %s", current.String(), canonversion.Version)
 	}
 }
 
