@@ -1,0 +1,88 @@
+name: Deploy SDK Developer Portal to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "sdk/portal/**"
+      - ".github/workflows/deploy-portal.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build & Validate Portal
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Portal Static Assets
+        run: |
+          portal_dir="sdk/portal"
+
+          if [ ! -d "$portal_dir" ]; then
+            echo "Error: Portal directory $portal_dir not found."
+            exit 1
+          fi
+
+          required_files=(
+            "index.html"
+            "docs.html"
+            "api-explorer.html"
+            "examples.html"
+            "changelog.html"
+            "css/portal.css"
+            "js/portal.js"
+          )
+
+          for file in "${required_files[@]}"; do
+            full_path="$portal_dir/$file"
+            if [ ! -f "$full_path" ]; then
+              echo "Error: Missing required portal file $full_path"
+              exit 1
+            fi
+            if [ ! -s "$full_path" ]; then
+              echo "Error: Required portal file $full_path is empty"
+              exit 1
+            fi
+          done
+
+          echo "Portal validation succeeded. All required static assets exist and are non-empty."
+
+      - name: Configure .nojekyll for Static Hosting
+        run: |
+          touch sdk/portal/.nojekyll
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "sdk/portal"
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
