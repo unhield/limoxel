@@ -6,6 +6,89 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.4.0] - 2026-08-28
+
+### Added
+
+#### Public SDK
+
+- Added the public Limoxel SDK for external applications and integrations.
+- Added stable capability contracts for repository management, files, packages, symbols, and search.
+- Added intelligence contracts for knowledge graphs, analysis, navigation, reasoning, and events.
+- Added a unified intelligence facade for request-driven analysis, navigation, reasoning, and event workflows.
+- Added structured SDK error handling with machine-readable error categories and codes.
+- Added pagination support for applicable list and search operations.
+- Added context-aware cancellation support across SDK operations.
+- Added thread-safe client and capability accessors for concurrent repository operations.
+
+#### SDK Examples
+
+- Added six complete SDK examples covering:
+  - Basic repository usage.
+  - Repository analysis.
+  - Knowledge graph operations.
+  - Code navigation.
+  - Intelligence and reasoning.
+  - Event streaming.
+
+#### SDK Templates
+
+- Added application templates for:
+  - Starter applications.
+  - CLI applications.
+  - Integration and CI/CD workflows.
+  - Service applications.
+  - Enterprise repository analysis.
+
+#### Developer Portal
+
+- Added a lightweight developer portal for the public SDK.
+- Added SDK documentation and API reference pages.
+- Added an interactive API explorer covering the public capability contracts.
+- Added an example browser with reusable SDK recipes.
+- Added a release changelog view.
+
+#### Distribution
+
+- Added SDK distribution support with SHA-256 integrity verification manifests.
+- Added package validation and distribution verification support.
+
+#### Compatibility
+
+- Added public compatibility tooling for evaluating SDK version migrations.
+- Added deprecation tracking and replacement guidance for public API consumers.
+- Added semantic-versioning and compatibility documentation for SDK consumers.
+
+### Changed
+
+- Extended Limoxel beyond command-line repository analysis with a reusable public SDK surface.
+- Extended repository capabilities through stable public contracts without requiring consumers to depend on internal implementation packages.
+- Extended engineering intelligence capabilities through reusable SDK interfaces.
+- Extended developer documentation with public SDK usage, API contracts, examples, templates, compatibility guidance, and distribution information.
+- Updated public release and version references to the `1.4.0` release.
+
+### Fixed
+
+- Improved consistency between the public SDK contracts, documentation, examples, and supported API surface.
+- Improved SDK lifecycle handling, structured error behavior, and compatibility guidance.
+- Improved distribution validation and package integrity verification workflows.
+
+### Security
+
+- SDK distribution packages provide SHA-256 integrity verification manifests.
+- Repository analysis remains local to the supplied workspace and does not require modification of repository source files.
+- Public SDK error and diagnostic interfaces expose structured information without requiring consumers to depend on internal implementation details.
+
+### Documentation
+
+- Added the public SDK and API developer documentation.
+- Added API surface references for all public capability contracts.
+- Added consumer workflows, troubleshooting guidance, compatibility documentation, and distribution guidance.
+- Added six SDK examples and five application templates.
+- Added developer portal documentation and API exploration resources.
+
+---
+
 ## [1.3.0] - 2026-08-26
 
 ### Added
@@ -379,6 +462,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+[1.4.0]: https://github.com/unhield/limoxel/releases/tag/v1.4.0
 [1.3.0]: https://github.com/unhield/limoxel/releases/tag/v1.3.0
 [1.2.1]: https://github.com/unhield/limoxel/releases/tag/v1.2.1
 [1.2.0]: https://github.com/unhield/limoxel/releases/tag/v1.2.0

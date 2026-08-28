@@ -945,6 +945,17 @@ func (m *NavigationModel) Definition(symbolID string) *DefinitionResult {
 	return m.definitions[symbolID]
 }
 
+func (m *NavigationModel) Definitions() map[string]*DefinitionResult {
+	if m == nil || m.definitions == nil {
+		return nil
+	}
+	res := make(map[string]*DefinitionResult, len(m.definitions))
+	for k, v := range m.definitions {
+		res[k] = v
+	}
+	return res
+}
+
 func (m *NavigationModel) References(symbolID string) *ReferenceResult {
 	if m == nil {
 		return nil
@@ -993,11 +1004,33 @@ func (m *NavigationModel) PackageHierarchyNode(packagePath string) *PackageHiera
 	return m.packageHierarchy[packagePath]
 }
 
+func (m *NavigationModel) SymbolHierarchyNodes() map[string]*SymbolHierarchyNode {
+	if m == nil || m.symbolHierarchy == nil {
+		return nil
+	}
+	res := make(map[string]*SymbolHierarchyNode, len(m.symbolHierarchy))
+	for k, v := range m.symbolHierarchy {
+		res[k] = v
+	}
+	return res
+}
+
 func (m *NavigationModel) CallHierarchyNode(symbolID string) *CallHierarchyNode {
 	if m == nil {
 		return nil
 	}
 	return m.callNodes[symbolID]
+}
+
+func (m *NavigationModel) CallHierarchyNodes() map[string]*CallHierarchyNode {
+	if m == nil || m.callNodes == nil {
+		return nil
+	}
+	res := make(map[string]*CallHierarchyNode, len(m.callNodes))
+	for k, v := range m.callNodes {
+		res[k] = v
+	}
+	return res
 }
 
 func (m *NavigationModel) ValidationReport() *NavigationValidationReport {

@@ -531,6 +531,19 @@ func calculateMatchScore(query, name, path string, opts SearchOptions) float64 {
 		p = strings.ToLower(p)
 	}
 
+	// Wildcard / match-all query
+	if q == "*" || q == "." || q == "" {
+		return 1.0
+	}
+
+	// Glob pattern match
+	if matched, _ := filepath.Match(q, n); matched {
+		return 0.95
+	}
+	if matched, _ := filepath.Match(q, p); matched {
+		return 0.90
+	}
+
 	if opts.ExactMatch {
 		if n == q {
 			return 1.0

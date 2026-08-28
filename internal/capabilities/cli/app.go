@@ -13,6 +13,7 @@ import (
 	"github.com/unhield/limoxel/internal/capabilities/cli/config"
 	"github.com/unhield/limoxel/internal/capabilities/cli/diagnostics"
 	origcli "github.com/unhield/limoxel/internal/cli"
+	"github.com/unhield/limoxel/internal/version"
 )
 
 // App is the top-level application coordinator managing CLI command lifecycle and execution.
@@ -34,7 +35,7 @@ type App struct {
 func NewApp() *App {
 	app := &App{
 		name:        "limoxel",
-		version:     "1.3.0",
+		version:     version.Version,
 		description: "Limoxel Developer Command Line Interface — Engineering Intelligence Platform",
 		commands:    make(map[string]*Command),
 		order:       make([]string, 0),
@@ -72,7 +73,7 @@ func (a *App) Name() string {
 // Version returns the application version string.
 func (a *App) Version() string {
 	if a == nil {
-		return "1.3.0"
+		return version.Version
 	}
 	return a.version
 }

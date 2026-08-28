@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Example Gallery - Limoxel SDK</title>
+  <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo">
+        <span>Limoxel SDK</span>
+        <span class="badge">v1.4.0</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html">Docs</a></li>
+        <li><a href="api-explorer.html">API Explorer</a></li>
+        <li><a href="examples.html" class="active">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <h1 style="color: var(--text-bright); margin-bottom: 1rem;">SDK Example Gallery</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Copyable, verified code recipes demonstrating real-world Limoxel SDK usage.</p>
+
+    <input type="text" id="search-filter" class="search-bar" placeholder="Search examples (e.g. 'Basic', 'Health', 'Mermaid', 'Callers', 'Impact')...">
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>1. Basic Workspace & Symbol Discovery</h3>
+      <p>Initialize the client, query file counts, and search symbols in a single workflow.</p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := sdk.OpenWorkspace(ctx, ".")
+    defer client.Close()
+
+    res, _ := client.Search().SearchSymbols(ctx, "New", sdk.PaginationOptions{Limit: 5})
+    for _, m := range res.Matches {
+        fmt.Printf("%s (%s)\n", m.Name, m.Location)
+    }
+}</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>2. CI Architecture & Health Quality Gate</h3>
+      <p>Evaluate overall repository health scores and detect circular dependencies.</p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := sdk.OpenWorkspace(ctx, ".")
+    defer client.Close()
+
+    health, _ := client.Analysis().RepositoryHealth(ctx)
+    fmt.Printf("Health: %.1f/100 (Grade: %s)\n", health.OverallScore, health.Grade)
+
+    deps, _ := client.Analysis().AnalyzeDependencies(ctx, "")
+    fmt.Printf("Circular Dependencies: %d\n", deps.CircularDependencies)
+}</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>3. Exporting Knowledge Graphs to Mermaid</h3>
+      <p>Render relationship graphs into Mermaid flowchart format for documentation.</p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := sdk.OpenWorkspace(ctx, ".")
+    defer client.Close()
+
+    res, _ := client.Graph().ExportGraph(ctx, sdk.GraphFilter{MaxDepth: 2}, sdk.ExportFormatMermaid)
+    fmt.Println(res.Content)
+}</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>4. Definition & Reference Navigation</h3>
+      <p>Find symbol definitions and all incoming references across packages.</p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := sdk.OpenWorkspace(ctx, ".")
+    defer client.Close()
+
+    def, _ := client.Navigation().GoToDefinition(ctx, "Calculate")
+    if def.Target != nil {
+        fmt.Printf("Defined at: %s:%d\n", def.Target.FilePath, def.Target.Line)
+    }
+}</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>5. Blast-Radius Change Impact Reasoning</h3>
+      <p>Compute downstream impacted entities and risk score for a proposed change.</p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := sdk.OpenWorkspace(ctx, ".")
+    defer client.Close()
+
+    impact, _ := client.Reasoning().AnalyzeImpact(ctx, "pkg/core")
+    fmt.Printf("Risk: %s (Impact Score: %.1f)\n", impact.RiskLevel, impact.ImpactScore)
+}</code>
+      </div>
+    </div>
+
+    <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <h3>6. Real-Time Event Streaming</h3>
+      <p>Subscribe to repository lifecycle and analysis completion events asynchronously.</p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>package main
+
+import (
+    "context"
+    "fmt"
+    "github.com/unhield/limoxel/sdk"
+)
+
+func main() {
+    ctx := context.Background()
+    client, _ := sdk.New(sdk.WithWorkspace("."))
+    defer client.Close()
+
+    sub, _ := client.Events().Subscribe(ctx, sdk.EventTypeRepositoryOpened, func(ev sdk.Event) {
+        fmt.Printf("Event: %s at %s\n", ev.Type(), ev.Timestamp())
+    })
+    defer sub.Unsubscribe()
+
+    _, _ = client.Repository().Open(ctx, ".")
+}</code>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+  </footer>
+
+  <script src="js/portal.js"></script>
+</body>
+</html>
