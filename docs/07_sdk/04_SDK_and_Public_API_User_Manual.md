@@ -143,8 +143,8 @@ client, err := sdk.New(
 | Method | Return Type | Description |
 | :--- | :--- | :--- |
 | `Workspace()` | `string` | Returns the configured repository root path. |
-| `Version()` | `version.SemVer` | Returns the semantic version of the SDK (`1.4.0`). |
-| `VersionString()` | `string` | Returns the formatted version string (e.g., `"1.4.0"`). |
+| `Version()` | `version.SemVer` | Returns the semantic version of the SDK (`1.5.0`). |
+| `VersionString()` | `string` | Returns the formatted version string (e.g., `"1.5.0"`). |
 | `Close()` | `error` | Releases all underlying resources. Safe and idempotent. |
 | `Repository()` | `RepositoryManagementContract` | Provides repository lifecycle, metadata, and statistics. |
 | `Files()` | `FileContract` | Provides file discovery, status, and relationships. |
@@ -518,7 +518,7 @@ if err != nil {
 Limoxel SDK follows strict [Semantic Versioning (SemVer 2.0.0)](https://semver.org/).
 
 ### SemVer Format
-Versions are structured as `MAJOR.MINOR.PATCH` (e.g., `1.4.0`):
+Versions are structured as `MAJOR.MINOR.PATCH` (e.g., `1.5.0`):
 - **MAJOR**: Breaking API contract changes or signature modifications.
 - **MINOR**: Backward-compatible new capabilities, contracts, or options.
 - **PATCH**: Backward-compatible bug fixes and performance enhancements.
@@ -555,7 +555,7 @@ if record, isDeprecated := tracker.Lookup("client.OldMethod"); isDeprecated {
 		record.Since, record.Replacement, record.MigrationGuidance)
 }
 ```
-*(Note: As of version `1.4.0`, all public APIs are in `StateSupported` status with zero deprecated symbols).*
+*(Note: As of version `1.5.0`, all public APIs are in `StateSupported` status with zero deprecated symbols).*
 
 ---
 

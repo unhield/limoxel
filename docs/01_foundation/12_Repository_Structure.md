@@ -129,9 +129,20 @@ limoxel/
 ├── docs/
 │   ├── 01_foundation/
 │   ├── 02_architecture/
-│   └── 03_engineering/
+│   ├── 03_engineering/
+│   ├── 04_repository/
+│   ├── 05_intelligence/
+│   ├── 06_cli/
+│   ├── 07_sdk/
+│   └── 08_plugin/
 │
 ├── internal/
+│   ├── capabilities/
+│   │   ├── cli/
+│   │   ├── intelligence/
+│   │   ├── plugin/
+│   │   ├── repository/
+│   │   └── sdk/
 │   ├── cli/
 │   ├── engine/
 │   ├── extension/
@@ -150,15 +161,35 @@ limoxel/
 │   │   └── runtime/
 │   ├── project/
 │   ├── repository/
+│   ├── version/
 │   └── workspace/
+│
+├── plugin/
+│   ├── api/
+│   ├── enterprise/
+│   ├── examples/
+│   ├── marketplace/
+│   ├── security/
+│   ├── templates/
+│   ├── testing/
+│   └── tooling/
+│
+├── sdk/
+│   ├── compatibility/
+│   ├── distribution/
+│   ├── examples/
+│   ├── portal/
+│   └── templates/
 │
 ├── tests/
 │   └── integration/
 │
+├── .editorconfig
 ├── .github/
 ├── .gitattributes
 ├── .gitignore
 ├── CHANGELOG.md
+├── CODEOWNERS
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── LICENSE
@@ -225,6 +256,22 @@ Packages contained within `internal/` collectively form the engineering core of 
 
 ---
 
+## plugin/
+
+The `plugin/` directory contains public plugin developer contracts, SDK facades, tooling, examples, and templates for the Limoxel plugin ecosystem.
+
+It provides the public interfaces and capabilities consumed by plugin authors while isolating internal runtime implementation.
+
+---
+
+## sdk/
+
+The `sdk/` directory contains the public Go Software Development Kit of Limoxel.
+
+It provides programmatic access to repository indexing, knowledge graphs, architectural boundary analysis, semantic navigation, and deterministic change-impact reasoning.
+
+---
+
 ## tests/
 
 The `tests/` directory contains repository-level validation assets.
@@ -262,6 +309,14 @@ The organization of the production implementation preserves separation of concer
 ---
 
 # Production Package Organization
+
+## capabilities/
+
+The `capabilities/` package houses high-level engineering capabilities across CLI, intelligence, plugins, repository analysis, and SDK services.
+
+These capabilities build upon foundational platform services to provide modular, domain-specific analysis, extensibility, and integration features.
+
+---
 
 ## cli/
 
@@ -352,6 +407,14 @@ The `workspace/` package represents the execution workspace of Limoxel.
 It coordinates workspace discovery, workspace initialization, and the relationship between repositories, projects, and platform execution.
 
 The workspace provides the operational context in which repository analysis occurs.
+
+---
+
+## version/
+
+The `version/` package defines the canonical product version Single Source of Truth (SSOT) for Limoxel.
+
+All application, SDK, and CLI components derive or validate product release versioning through this package.
 
 ---
 
@@ -535,6 +598,36 @@ These documents provide the technical guidance required for the implementation a
 
 ---
 
+## Repository
+
+The Repository documentation specifies the core indexing, parsing, language modeling, symbol resolution, and dependency graph capabilities of Limoxel.
+
+---
+
+## Intelligence
+
+The Intelligence documentation specifies the knowledge graph, semantic indexing, architectural analysis, cross-repository reasoning, and code navigation capabilities.
+
+---
+
+## CLI
+
+The CLI documentation provides user and developer guides for the Limoxel developer command-line interface and interactive shell.
+
+---
+
+## SDK
+
+The SDK documentation provides public API user manuals, distribution specifications, and integration guides for the Limoxel Go SDK.
+
+---
+
+## Plugin
+
+The Plugin documentation defines the architecture, security models, developer guides, marketplace specifications, and enterprise governance for the Limoxel plugin ecosystem.
+
+---
+
 # Testing Organization
 
 Testing is organized according to engineering responsibility rather than repository location alone.
@@ -578,7 +671,7 @@ Repository metadata supports the engineering platform but does not participate i
 The repository organization of Limoxel shall adhere to the following rules.
 
 - Every directory shall represent a single engineering responsibility.
-- Production implementation shall reside exclusively within `internal/`.
+- Production implementation shall reside exclusively within `internal/`, `plugin/`, and `sdk/`.
 - Executable entry points shall reside exclusively within `cmd/`.
 - Engineering documentation shall reside exclusively within `docs/`.
 - Repository-level testing shall reside exclusively within `tests/`.

@@ -91,7 +91,7 @@ limoxel version
 
 Expected output:
 ```text
-limoxel version 1.4.0
+limoxel version 1.5.0
 ```
 
 ---
