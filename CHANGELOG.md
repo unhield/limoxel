@@ -6,6 +6,176 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.5.0] - 2026-09-20
+
+### Added
+
+#### Plugin Framework
+
+- Added the Limoxel Plugin Framework for extending Limoxel through defined plugin contracts.
+- Added plugin manifests and metadata.
+- Added plugin capability declarations.
+- Added plugin discovery and validation.
+- Added plugin registry support.
+- Added plugin dependency tracking and resolution.
+- Added plugin lifecycle management.
+- Added plugin installation, activation, suspension, restart, update, and removal workflows.
+- Added plugin compatibility and version validation.
+- Added plugin integrity validation.
+- Added deterministic plugin lifecycle and state management.
+
+#### Plugin SDK
+
+- Added the public Plugin SDK for building Limoxel integrations and extensions.
+- Added plugin interfaces for repository access.
+- Added plugin interfaces for symbols.
+- Added plugin interfaces for search.
+- Added plugin interfaces for knowledge graphs.
+- Added plugin interfaces for engineering analysis.
+- Added plugin event interfaces.
+- Added plugin development templates.
+- Added plugin examples.
+- Added plugin testing support.
+- Added plugin development and packaging tooling.
+- Added plugin SDK documentation and developer guidance.
+
+#### Plugin Security
+
+- Added plugin integrity verification.
+- Added cryptographic plugin signature verification.
+- Added publisher and trust verification.
+- Added plugin version and compatibility verification.
+- Added plugin permission management.
+- Added repository, file, network, configuration, and runtime permission controls.
+- Added runtime security monitoring.
+- Added security violation reporting.
+- Added resource and runtime controls.
+- Added operating-system process isolation support for supported out-of-process plugin execution.
+- Added security-aware plugin loading and execution workflows.
+- Added security validation for plugin packages and artifacts.
+
+#### Plugin Marketplace
+
+- Added the Limoxel Plugin Marketplace infrastructure.
+- Added plugin catalog management.
+- Added plugin metadata management.
+- Added plugin publishing and distribution.
+- Added plugin version management.
+- Added plugin dependency resolution.
+- Added plugin search and discovery.
+- Added plugin categories.
+- Added featured and recommended plugin discovery.
+- Added publisher profiles.
+- Added publisher verification.
+- Added plugin ratings and reviews.
+- Added download metrics.
+- Added package validation.
+- Added archive safety validation.
+- Added artifact integrity verification.
+- Added package signature verification.
+- Added plugin compatibility validation.
+- Added marketplace distribution and download support.
+
+#### Enterprise Plugin Support
+
+- Added organization-scoped plugin support.
+- Added private plugin management.
+- Added organization plugin registries.
+- Added internal plugin distribution.
+- Added organization permissions.
+- Added plugin ownership management.
+- Added plugin allowlists and denylists.
+- Added plugin version policies.
+- Added plugin security policies.
+- Added plugin deployment policies.
+- Added centralized plugin management.
+- Added plugin installation management.
+- Added plugin update management.
+- Added plugin removal management.
+- Added deployment target management.
+- Added enterprise plugin monitoring.
+- Added enterprise audit information.
+- Added enterprise compatibility validation.
+- Added enterprise security validation.
+- Added enterprise upgrade validation.
+- Added enterprise stability validation.
+- Added organization and tenant isolation controls.
+
+#### Plugin Tooling and Documentation
+
+- Added plugin development templates.
+- Added plugin generation tooling.
+- Added plugin build tooling.
+- Added plugin packaging tooling.
+- Added plugin debugging support.
+- Added plugin testing support.
+- Added plugin ecosystem documentation.
+- Added Plugin Framework documentation.
+- Added Plugin SDK documentation.
+- Added Plugin Security documentation.
+- Added Plugin Marketplace documentation.
+- Added Enterprise Plugin Support documentation.
+- Added Plugin SDK developer guidance.
+
+### Changed
+
+- Extended Limoxel from a platform consumed through its CLI and public SDK into an extensible platform supporting a defined plugin ecosystem.
+- Extended the public extension surface through stable plugin contracts.
+- Extended repository and engineering intelligence capabilities to plugin consumers through the Plugin SDK.
+- Extended Limoxel's security model to cover plugin verification, permissions, runtime controls, and supported isolated execution.
+- Extended plugin distribution capabilities through the marketplace.
+- Extended plugin management capabilities for organizational and enterprise environments.
+- Extended compatibility and version management to cover plugins and plugin dependencies.
+- Extended developer tooling with plugin generation, packaging, testing, and debugging workflows.
+- Extended project documentation with the complete plugin ecosystem documentation set.
+- Updated the Limoxel product version to `1.5.0`.
+
+### Fixed
+
+- Improved plugin lifecycle consistency across installation, activation, suspension, restart, update, and removal workflows.
+- Improved validation of plugin manifests, dependencies, versions, compatibility, paths, and integrity.
+- Improved defensive handling of plugin metadata and registry state.
+- Improved error handling across plugin lifecycle and registry operations.
+- Improved plugin package path and archive validation.
+- Improved plugin build and packaging validation.
+- Improved publisher verification and marketplace artifact validation.
+- Improved binding between marketplace package signatures and verified plugin artifacts.
+- Improved marketplace namespace and ownership validation.
+- Improved marketplace distribution and download accounting consistency.
+- Improved organization and membership validation for enterprise plugin management.
+- Improved enterprise policy validation and enforcement behavior.
+- Improved enterprise deployment and update validation.
+- Improved audit and monitoring consistency across enterprise plugin operations.
+- Improved plugin command validation and replay protection.
+- Improved security failure handling for supported isolated plugin execution.
+- Improved consistency between plugin APIs, security controls, marketplace behavior, enterprise management, and documentation.
+
+### Security
+
+- Added cryptographic verification for plugin signatures and integrity.
+- Added publisher and trust verification for plugin distribution.
+- Added explicit plugin permission controls.
+- Added security-aware plugin validation before execution and distribution.
+- Added runtime security monitoring and violation reporting.
+- Added supported operating-system process isolation for out-of-process plugin execution.
+- Added enterprise security policies for controlling plugin use and deployment.
+- Added package and archive validation to reduce unsafe plugin package structures.
+- Added artifact and publisher validation to marketplace distribution workflows.
+- Plugin execution security remains dependent on the selected execution mode and available platform controls; trusted in-process execution is not equivalent to an operating-system isolation boundary.
+
+### Documentation
+
+- Added the complete plugin documentation set under `docs/08_plugin/`.
+- Added plugin framework documentation covering lifecycle, contracts, metadata, discovery, loading, registry, dependencies, and validation.
+- Added Plugin SDK documentation covering plugin APIs and development.
+- Added Plugin Security documentation covering verification, permissions, runtime controls, and execution security.
+- Added Plugin Marketplace documentation covering publishing, distribution, discovery, validation, and community capabilities.
+- Added Enterprise Plugin Support documentation covering organizations, policies, management, deployment, monitoring, and validation.
+- Added Plugin SDK developer guidance with practical plugin development workflows.
+- Updated repository documentation to include the Plugin Ecosystem and its public development surfaces.
+
+---
+
 ## [1.4.0] - 2026-08-28
 
 ### Added
@@ -462,6 +632,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+[1.5.0]: https://github.com/unhield/limoxel/releases/tag/v1.5.0
 [1.4.0]: https://github.com/unhield/limoxel/releases/tag/v1.4.0
 [1.3.0]: https://github.com/unhield/limoxel/releases/tag/v1.3.0
 [1.2.1]: https://github.com/unhield/limoxel/releases/tag/v1.2.1
