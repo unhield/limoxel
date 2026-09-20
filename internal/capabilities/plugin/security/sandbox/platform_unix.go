@@ -12,13 +12,14 @@ import (
 
 // UnixProcessSandbox implements PluginSandbox on Unix-like operating systems (Linux, macOS).
 type UnixProcessSandbox struct {
-	mu           sync.RWMutex
-	cfg          SandboxConfig
-	fsGuard      *FilesystemGuard
-	netGuard     *NetworkGuard
-	limiter      *ResourceLimiter
-	attachedPids map[int]struct{}
-	closed       bool
+	mu            sync.RWMutex
+	cfg           SandboxConfig
+	fsGuard       *FilesystemGuard
+	netGuard      *NetworkGuard
+	limiter       *ResourceLimiter
+	attachedPids  map[int]struct{}
+	attachedPgids map[int]struct{}
+	closed        bool
 }
 
 // NewPlatformSandbox instantiates the Unix process sandbox.
@@ -38,15 +39,16 @@ func NewPlatformSandbox(cfg SandboxConfig) (PluginSandbox, error) {
 	lim := NewResourceLimiter(cfg.Limits)
 
 	return &UnixProcessSandbox{
-		cfg:          cfg,
-		fsGuard:      fs,
-		netGuard:     netG,
-		limiter:      lim,
-		attachedPids: make(map[int]struct{}),
+		cfg:           cfg,
+		fsGuard:       fs,
+		netGuard:      netG,
+		limiter:       lim,
+		attachedPids:  make(map[int]struct{}),
+		attachedPgids: make(map[int]struct{}),
 	}, nil
 }
 
-// Initialize sets up storage directories for the sandbox.
+// Initialize prepares directory hierarchies required by the sandbox.
 func (s *UnixProcessSandbox) Initialize(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -64,7 +66,7 @@ func (s *UnixProcessSandbox) Network() *NetworkGuard {
 	return s.netGuard
 }
 
-// AttachProcess records the process ID and applies process group tracking.
+// AttachProcess records the process ID and applies process group tracking, failing closed if the target process cannot be attached.
 func (s *UnixProcessSandbox) AttachProcess(pid int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -72,8 +74,26 @@ func (s *UnixProcessSandbox) AttachProcess(pid int) error {
 	if s.closed {
 		return errors.New("cannot attach process to closed sandbox")
 	}
+	if pid <= 0 {
+		return fmt.Errorf("invalid process ID: %d", pid)
+	}
+
+	// Verify the process exists and the caller has permissions to signal it
+	if err := syscall.Kill(pid, 0); err != nil {
+		return fmt.Errorf("target process %d cannot be attached: %w", pid, err)
+	}
+
+	// Determine and track process group
+	pgid, err := syscall.Getpgid(pid)
+	if err != nil {
+		return fmt.Errorf("failed to determine process group for pid %d: %w", pid, err)
+	}
 
 	s.attachedPids[pid] = struct{}{}
+	if s.attachedPgids == nil {
+		s.attachedPgids = make(map[int]struct{})
+	}
+	s.attachedPgids[pgid] = struct{}{}
 	s.limiter.IncrementProcesses()
 	return nil
 }
@@ -83,9 +103,10 @@ func (s *UnixProcessSandbox) Terminate() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	for pgid := range s.attachedPgids {
+		_ = syscall.Kill(-pgid, syscall.SIGKILL)
+	}
 	for pid := range s.attachedPids {
-		// Signal negative PID to kill entire process group if setpgid was used
-		_ = syscall.Kill(-pid, syscall.SIGKILL)
 		_ = syscall.Kill(pid, syscall.SIGKILL)
 	}
 
@@ -102,8 +123,10 @@ func (s *UnixProcessSandbox) Cleanup() error {
 	}
 	s.closed = true
 
+	for pgid := range s.attachedPgids {
+		_ = syscall.Kill(-pgid, syscall.SIGKILL)
+	}
 	for pid := range s.attachedPids {
-		_ = syscall.Kill(-pid, syscall.SIGKILL)
 		_ = syscall.Kill(pid, syscall.SIGKILL)
 	}
 

@@ -229,3 +229,66 @@ func TestPlatformSandbox_Lifecycle(t *testing.T) {
 		t.Fatalf("cleanup failed: %v", err)
 	}
 }
+
+func testSandboxConfig(tmpDir string) SandboxConfig {
+	return SandboxConfig{
+		PluginID:      "test-plugin-sbx",
+		WorkspaceRoot: filepath.Join(tmpDir, "ws"),
+		DataRoot:      filepath.Join(tmpDir, "data"),
+		TempRoot:      filepath.Join(tmpDir, "temp"),
+		Limits:        DefaultResourceLimits(),
+	}
+}
+
+func TestSandbox_AttachProcessNonexistentPIDFails(t *testing.T) {
+	tmpDir := t.TempDir()
+	cfg := testSandboxConfig(tmpDir)
+	sbx, err := NewPlatformSandbox(cfg)
+	if err != nil {
+		t.Fatalf("failed to create sandbox: %v", err)
+	}
+	defer sbx.Cleanup()
+
+	bogusPID := 99999999
+	err = sbx.AttachProcess(bogusPID)
+	if err == nil {
+		t.Fatalf("expected AttachProcess on nonexistent PID %d to fail, got nil", bogusPID)
+	}
+}
+
+func TestSandbox_AttachProcessInvalidPIDFails(t *testing.T) {
+	tmpDir := t.TempDir()
+	cfg := testSandboxConfig(tmpDir)
+	sbx, err := NewPlatformSandbox(cfg)
+	if err != nil {
+		t.Fatalf("failed to create sandbox: %v", err)
+	}
+	defer sbx.Cleanup()
+
+	for _, invalidPID := range []int{0, -1, -99} {
+		if err := sbx.AttachProcess(invalidPID); err == nil {
+			t.Errorf("expected AttachProcess(%d) to fail, got nil", invalidPID)
+		}
+	}
+}
+
+func TestSandbox_RepeatedTerminationAndCleanup(t *testing.T) {
+	tmpDir := t.TempDir()
+	cfg := testSandboxConfig(tmpDir)
+	sbx, err := NewPlatformSandbox(cfg)
+	if err != nil {
+		t.Fatalf("failed to create sandbox: %v", err)
+	}
+
+	for i := 0; i < 3; i++ {
+		if err := sbx.Terminate(); err != nil {
+			t.Errorf("repeated Terminate call %d failed: %v", i, err)
+		}
+	}
+
+	for i := 0; i < 3; i++ {
+		if err := sbx.Cleanup(); err != nil {
+			t.Errorf("repeated Cleanup call %d failed: %v", i, err)
+		}
+	}
+}

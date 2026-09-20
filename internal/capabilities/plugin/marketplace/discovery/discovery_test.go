@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -274,5 +275,85 @@ func TestDiscovery_CategoryBreakdown(t *testing.T) {
 	}
 	if !foundAnalysis {
 		t.Fatal("analysis category missing from breakdown")
+	}
+}
+
+func TestDiscovery_RankingBoundedLimitsAndExcessiveAllocationProtection(t *testing.T) {
+	provider := setupTestCatalog()
+	engine := NewEngine(provider)
+
+	// 1. Massive limit (e.g. 1,000,000) must not cause excessive allocation and must be bounded
+	trending, err := engine.GetTrending(1000000)
+	if err != nil {
+		t.Fatalf("GetTrending with massive limit failed: %v", err)
+	}
+	if len(trending) > MaxDiscoveryLimit {
+		t.Errorf("expected trending results <= MaxDiscoveryLimit (%d), got %d", MaxDiscoveryLimit, len(trending))
+	}
+
+	featured, err := engine.GetFeatured(1000000)
+	if err != nil {
+		t.Fatalf("GetFeatured with massive limit failed: %v", err)
+	}
+	if len(featured) > MaxDiscoveryLimit {
+		t.Errorf("expected featured results <= MaxDiscoveryLimit (%d), got %d", MaxDiscoveryLimit, len(featured))
+	}
+
+	recs, err := engine.GetRecommended("go-linter", 1000000)
+	if err != nil {
+		t.Fatalf("GetRecommended with massive limit failed: %v", err)
+	}
+	if len(recs) > MaxDiscoveryLimit {
+		t.Errorf("expected recommended results <= MaxDiscoveryLimit (%d), got %d", MaxDiscoveryLimit, len(recs))
+	}
+
+	// 2. Extreme limits such as math.MaxInt must remain strictly bounded without overflow
+	trendingMax, err := engine.GetTrending(math.MaxInt)
+	if err != nil {
+		t.Fatalf("GetTrending with math.MaxInt failed: %v", err)
+	}
+	if len(trendingMax) > MaxDiscoveryLimit {
+		t.Errorf("expected trending results <= MaxDiscoveryLimit (%d), got %d", MaxDiscoveryLimit, len(trendingMax))
+	}
+
+	featuredMax, err := engine.GetFeatured(math.MaxInt)
+	if err != nil {
+		t.Fatalf("GetFeatured with math.MaxInt failed: %v", err)
+	}
+	if len(featuredMax) > MaxDiscoveryLimit {
+		t.Errorf("expected featured results <= MaxDiscoveryLimit (%d), got %d", MaxDiscoveryLimit, len(featuredMax))
+	}
+
+	recsMax, err := engine.GetRecommended("go-linter", math.MaxInt)
+	if err != nil {
+		t.Fatalf("GetRecommended with math.MaxInt failed: %v", err)
+	}
+	if len(recsMax) > MaxDiscoveryLimit {
+		t.Errorf("expected recommended results <= MaxDiscoveryLimit (%d), got %d", MaxDiscoveryLimit, len(recsMax))
+	}
+
+	// 2. Zero and negative limits must use default values gracefully
+	trendingDefault, err := engine.GetTrending(0)
+	if err != nil {
+		t.Fatalf("GetTrending(0) failed: %v", err)
+	}
+	if len(trendingDefault) == 0 {
+		t.Errorf("expected non-empty trending with default limit")
+	}
+
+	trendingNeg, err := engine.GetTrending(-5)
+	if err != nil {
+		t.Fatalf("GetTrending(-5) failed: %v", err)
+	}
+	if len(trendingNeg) == 0 {
+		t.Errorf("expected non-empty trending with negative limit")
+	}
+
+	recsDefault, err := engine.GetRecommended("go-linter", 0)
+	if err != nil {
+		t.Fatalf("GetRecommended(0) failed: %v", err)
+	}
+	if len(recsDefault) == 0 {
+		t.Errorf("expected non-empty recommended with default limit")
 	}
 }

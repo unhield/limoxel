@@ -94,3 +94,113 @@ func TestProcessSupervisor_ForcedKillOnTimeout(t *testing.T) {
 		t.Errorf("forced kill took too long: %v", duration)
 	}
 }
+
+func TestProcessSupervisor_ForceKillImmediateVerifyExited(t *testing.T) {
+	cfg := ProcessSupervisorConfig{
+		Command: os.Args[0],
+		Args:    []string{"-test.run=TestHelperProcess", "--"},
+		Env: map[string]string{
+			"GO_WANT_HELPER_PROCESS": "1",
+			"HELPER_MODE":            "hang",
+		},
+		GracefulTimeout: 1 * time.Second,
+	}
+
+	sup := NewProcessSupervisor(cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, _, err := sup.Start(ctx)
+	if err != nil {
+		t.Fatalf("supervisor Start failed: %v", err)
+	}
+
+	if err := sup.ForceKill(); err != nil {
+		t.Fatalf("ForceKill failed: %v", err)
+	}
+
+	// VerifyExited immediately after ForceKill must succeed promptly
+	exited, err := sup.VerifyExited(500 * time.Millisecond)
+	if err != nil || !exited {
+		t.Fatalf("VerifyExited failed immediately after ForceKill: %v", err)
+	}
+
+	// Repeated VerifyExited calls must remain idempotent and succeed
+	for i := 0; i < 3; i++ {
+		exited2, err2 := sup.VerifyExited(100 * time.Millisecond)
+		if err2 != nil || !exited2 {
+			t.Fatalf("repeated VerifyExited call %d failed: %v", i, err2)
+		}
+	}
+
+	if sup.State() != StateStopped {
+		t.Errorf("expected state %s, got %s", StateStopped, sup.State())
+	}
+}
+
+func TestProcessSupervisor_ConcurrentForceKill(t *testing.T) {
+	cfg := ProcessSupervisorConfig{
+		Command: os.Args[0],
+		Args:    []string{"-test.run=TestHelperProcess", "--"},
+		Env: map[string]string{
+			"GO_WANT_HELPER_PROCESS": "1",
+			"HELPER_MODE":            "hang",
+		},
+	}
+
+	sup := NewProcessSupervisor(cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, _, err := sup.Start(ctx)
+	if err != nil {
+		t.Fatalf("supervisor Start failed: %v", err)
+	}
+
+	// Launch multiple concurrent ForceKill calls
+	errs := make(chan error, 5)
+	for i := 0; i < 5; i++ {
+		go func() {
+			errs <- sup.ForceKill()
+		}()
+	}
+
+	for i := 0; i < 5; i++ {
+		if err := <-errs; err != nil {
+			t.Errorf("concurrent ForceKill failed: %v", err)
+		}
+	}
+
+	exited, err := sup.VerifyExited(1 * time.Second)
+	if err != nil || !exited {
+		t.Fatalf("VerifyExited failed after concurrent ForceKill: %v", err)
+	}
+}
+
+func TestProcessSupervisor_ForceKillRacingWithExit(t *testing.T) {
+	cfg := ProcessSupervisorConfig{
+		Command: os.Args[0],
+		Args:    []string{"-test.run=TestHelperProcess", "--"},
+		Env: map[string]string{
+			"GO_WANT_HELPER_PROCESS": "1",
+			"HELPER_MODE":            "crash", // exits immediately with code 42
+		},
+	}
+
+	sup := NewProcessSupervisor(cfg)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, _, err := sup.Start(ctx)
+	if err != nil {
+		t.Fatalf("supervisor Start failed: %v", err)
+	}
+
+	// Race ForceKill with process natural/crash exit
+	_ = sup.ForceKill()
+
+	exited, err := sup.VerifyExited(2 * time.Second)
+	if err != nil || !exited {
+		t.Fatalf("VerifyExited failed when racing with exit: %v", err)
+	}
+}

@@ -243,11 +243,15 @@ func (s *FileStorage) SaveArtifact(expectedDigest string, r io.Reader) (string, 
 	writer := io.MultiWriter(tmpFile, hasher)
 
 	written, copyErr := io.Copy(writer, r)
-	_ = tmpFile.Close()
+	closeErr := tmpFile.Close()
 
 	if copyErr != nil {
 		_ = os.Remove(tmpPath)
 		return "", 0, fmt.Errorf("failed during artifact streaming: %w", copyErr)
+	}
+	if closeErr != nil {
+		_ = os.Remove(tmpPath)
+		return "", 0, fmt.Errorf("failed to close temporary upload file: %w", closeErr)
 	}
 
 	actualDigest := hex.EncodeToString(hasher.Sum(nil))

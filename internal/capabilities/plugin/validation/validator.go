@@ -183,15 +183,58 @@ func (v *Validator) validateHostCompatibility(m *model.Manifest) error {
 }
 
 func (v *Validator) validatePathSafety(m *model.Manifest) error {
-	if m.Entrypoint != "" {
-		trimmed := strings.TrimSpace(m.Entrypoint)
-		if strings.HasPrefix(trimmed, "/") || strings.HasPrefix(trimmed, "\\") || filepath.IsAbs(trimmed) || filepath.VolumeName(trimmed) != "" {
-			return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot be an absolute or volume path")
-		}
-		ep := filepath.Clean(trimmed)
-		if ep == ".." || strings.HasPrefix(ep, ".."+string(filepath.Separator)) || strings.HasPrefix(ep, "../") || strings.Contains(ep, string(filepath.Separator)+"..") || strings.Contains(ep, "/..") {
+	if m.Entrypoint == "" {
+		return nil
+	}
+
+	trimmed := strings.TrimSpace(m.Entrypoint)
+	targetPlatform := strings.ToLower(strings.TrimSpace(v.currentPlatform))
+
+	// Leading slash or backslash is an absolute path on any platform
+	if strings.HasPrefix(trimmed, "/") || strings.HasPrefix(trimmed, "\\") {
+		return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot be an absolute or volume path")
+	}
+
+	// Drive letter volume path (e.g. C:escape.exe, C:\escape.exe, C:/escape.exe)
+	if len(trimmed) >= 2 && isASCIIAlpha(trimmed[0]) && trimmed[1] == ':' {
+		return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot be an absolute or volume path")
+	}
+
+	// UNC network paths (e.g. \\server\share, //server/share)
+	if strings.HasPrefix(trimmed, `\\`) || strings.HasPrefix(trimmed, `//`) {
+		return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot be an absolute or volume path")
+	}
+
+	// Host OS filesystem check
+	if filepath.IsAbs(trimmed) || filepath.VolumeName(trimmed) != "" {
+		return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot be an absolute or volume path")
+	}
+
+	// Normalization and traversal inspection across both '/' and '\' separators
+	normalized := strings.ReplaceAll(trimmed, "\\", "/")
+	segments := strings.Split(normalized, "/")
+	for _, seg := range segments {
+		if seg == ".." {
 			return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot traverse out of plugin directory")
 		}
 	}
+
+	clean := filepath.Clean(normalized)
+	cleanNorm := strings.ReplaceAll(clean, "\\", "/")
+	if cleanNorm == ".." || strings.HasPrefix(cleanNorm, "../") || strings.Contains(cleanNorm, "/../") || strings.HasSuffix(cleanNorm, "/..") {
+		return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot traverse out of plugin directory")
+	}
+
+	// For Windows target platform, reject alternate data streams or remaining volume colons
+	if targetPlatform == "windows" {
+		if strings.Contains(trimmed, ":") {
+			return pkgerr.New(pkgerr.CodeSecurityPolicyViolation, m.ID, "plugin entrypoint cannot be an absolute or volume path")
+		}
+	}
+
 	return nil
+}
+
+func isASCIIAlpha(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
 }

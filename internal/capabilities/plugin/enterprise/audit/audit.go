@@ -108,8 +108,8 @@ func (l *Logger) RecordEvent(event AuditEvent) (*AuditEvent, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	l.lastSeq++
-	event.Sequence = l.lastSeq
+	nextSeq := l.lastSeq + 1
+	event.Sequence = nextSeq
 	if event.Timestamp.IsZero() {
 		event.Timestamp = time.Now().UTC()
 	}
@@ -125,12 +125,18 @@ func (l *Logger) RecordEvent(event AuditEvent) (*AuditEvent, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open audit log for appending: %w", err)
 	}
-	defer f.Close()
 
-	if _, err := f.Write(append(data, '\n')); err != nil {
-		return nil, fmt.Errorf("failed to append audit event: %w", err)
+	_, writeErr := f.Write(append(data, '\n'))
+	closeErr := f.Close()
+
+	if writeErr != nil {
+		return nil, fmt.Errorf("failed to append audit event: %w", writeErr)
+	}
+	if closeErr != nil {
+		return nil, fmt.Errorf("failed to close audit log: %w", closeErr)
 	}
 
+	l.lastSeq = nextSeq
 	l.lastHash = event.Hash
 	return &event, nil
 }

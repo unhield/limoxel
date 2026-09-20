@@ -172,6 +172,9 @@ func (s *WindowsProcessSandbox) AttachProcess(pid int) error {
 	if s.closed || s.jobHandle == 0 {
 		return errors.New("cannot attach process to closed or uninitialized sandbox")
 	}
+	if pid <= 0 {
+		return fmt.Errorf("invalid process ID: %d", pid)
+	}
 
 	// Open process handle with required access rights
 	desiredAccess := uintptr(processSetQuota | processTerminate | standardRightsRequired | synchronizeAccess)

@@ -8,13 +8,29 @@ import (
 	pubmarket "github.com/unhield/limoxel/plugin/marketplace"
 )
 
+const (
+	// MaxDiscoveryLimit establishes a hard upper bound on result sets to prevent excessive memory allocation.
+	MaxDiscoveryLimit = 100
+
+	// DefaultFeaturedLimit is the fallback limit for featured plugin discovery.
+	DefaultFeaturedLimit = 10
+
+	// DefaultTrendingLimit is the fallback limit for trending plugin discovery.
+	DefaultTrendingLimit = 10
+
+	// DefaultRecommendedLimit is the fallback limit for recommended plugin discovery.
+	DefaultRecommendedLimit = 5
+)
+
 // GetFeatured retrieves plugins marked as featured, or highest rated as fallback.
 func (e *Engine) GetFeatured(limit int) ([]pubmarket.PluginSummary, error) {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
 
 	if limit <= 0 {
-		limit = 10
+		limit = DefaultFeaturedLimit
+	} else if limit > MaxDiscoveryLimit {
+		limit = MaxDiscoveryLimit
 	}
 
 	all := e.provider.ListPlugins(true)
@@ -75,7 +91,9 @@ func (e *Engine) GetTrending(limit int) ([]pubmarket.PluginSummary, error) {
 	defer e.mu.RUnlock()
 
 	if limit <= 0 {
-		limit = 10
+		limit = DefaultTrendingLimit
+	} else if limit > MaxDiscoveryLimit {
+		limit = MaxDiscoveryLimit
 	}
 
 	all := e.provider.ListPlugins(true)
@@ -127,7 +145,7 @@ func (e *Engine) GetTrending(limit int) ([]pubmarket.PluginSummary, error) {
 		count = len(candidates)
 	}
 
-	results := make([]pubmarket.PluginSummary, 0, count)
+	results := make([]pubmarket.PluginSummary, 0)
 	for i := 0; i < count; i++ {
 		results = append(results, candidates[i].summary)
 	}
@@ -141,7 +159,9 @@ func (e *Engine) GetRecommended(pluginID string, limit int) ([]pubmarket.PluginS
 	defer e.mu.RUnlock()
 
 	if limit <= 0 {
-		limit = 5
+		limit = DefaultRecommendedLimit
+	} else if limit > MaxDiscoveryLimit {
+		limit = MaxDiscoveryLimit
 	}
 
 	target, err := e.provider.GetPlugin(pluginID)
@@ -219,7 +239,7 @@ func (e *Engine) GetRecommended(pluginID string, limit int) ([]pubmarket.PluginS
 		count = len(scored)
 	}
 
-	results := make([]pubmarket.PluginSummary, 0, count)
+	results := make([]pubmarket.PluginSummary, 0)
 	for i := 0; i < count; i++ {
 		results = append(results, scored[i].summary)
 	}

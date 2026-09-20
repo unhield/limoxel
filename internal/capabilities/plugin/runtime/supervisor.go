@@ -28,22 +28,23 @@ type ProcessSupervisorConfig struct {
 
 // ProcessSupervisor manages the operating system process boundary for a plugin runtime.
 type ProcessSupervisor struct {
-	mu         sync.RWMutex
-	cfg        ProcessSupervisorConfig
-	instanceID string
-	cmd        *exec.Cmd
-	stdin      io.WriteCloser
-	stdout     io.ReadCloser
-	pid        int
-	startTime  time.Time
-	exitTime   time.Time
-	exitCode   int
-	exited     bool
-	exitErr    error
-	exitChan   chan struct{}
-	state      RuntimeState
-	stateHooks []func(from, to RuntimeState)
-	stateMu    sync.RWMutex
+	mu            sync.RWMutex
+	cfg           ProcessSupervisorConfig
+	instanceID    string
+	cmd           *exec.Cmd
+	stdin         io.WriteCloser
+	stdout        io.ReadCloser
+	pid           int
+	startTime     time.Time
+	exitTime      time.Time
+	exitCode      int
+	exited        bool
+	exitErr       error
+	exitChan      chan struct{}
+	killInitiated bool
+	state         RuntimeState
+	stateHooks    []func(from, to RuntimeState)
+	stateMu       sync.RWMutex
 }
 
 // NewProcessSupervisor creates a supervisor instance configured with the specified options.
@@ -187,7 +188,7 @@ func (s *ProcessSupervisor) monitorProcess() {
 	close(s.exitChan)
 	s.mu.Unlock()
 
-	// If we were not actively stopping, an unexpected termination transitions state to Failed
+	// If we were actively stopping, transition state to Stopped, otherwise Failed
 	if currentState == StateStopping {
 		s.transitionState(StateStopped)
 	} else {
@@ -209,11 +210,12 @@ func (s *ProcessSupervisor) GracefulStop() error {
 	if s.stdin != nil {
 		_ = s.stdin.Close()
 	}
+	exitChan := s.exitChan
 	s.mu.Unlock()
 
 	// Wait for exit or timeout
 	select {
-	case <-s.exitChan:
+	case <-exitChan:
 		return nil
 	case <-time.After(s.cfg.GracefulTimeout):
 		// Force kill on timeout
@@ -221,36 +223,73 @@ func (s *ProcessSupervisor) GracefulStop() error {
 	}
 }
 
-// ForceKill unconditionally terminates the child operating system process.
+// ForceKill unconditionally terminates the child operating system process and waits for termination.
 func (s *ProcessSupervisor) ForceKill() error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	if s.exited || s.cmd == nil || s.cmd.Process == nil {
+		s.mu.Unlock()
 		return nil
 	}
 
-	err := s.cmd.Process.Kill()
-	return err
+	if s.State() == StateRunning {
+		s.transitionState(StateStopping)
+	}
+
+	proc := s.cmd.Process
+	exitChan := s.exitChan
+	alreadyInitiated := s.killInitiated
+	s.killInitiated = true
+	s.mu.Unlock()
+
+	if !alreadyInitiated {
+		err := proc.Kill()
+		if err != nil && !errors.Is(err, os.ErrProcessDone) &&
+			!strings.Contains(err.Error(), "process already finished") &&
+			!strings.Contains(err.Error(), "Access is denied") {
+			return err
+		}
+	}
+
+	// Wait for monitorProcess to reconcile and close exitChan
+	select {
+	case <-exitChan:
+		return nil
+	case <-time.After(5 * time.Second):
+		s.mu.RLock()
+		exited := s.exited
+		s.mu.RUnlock()
+		if exited {
+			return nil
+		}
+		return errors.New("timed out waiting for process termination confirmation")
+	}
 }
 
 // VerifyExited confirms that the operating system process has completely ceased execution.
 func (s *ProcessSupervisor) VerifyExited(timeout time.Duration) (bool, error) {
-	deadline := time.Now().Add(timeout)
-	for {
+	s.mu.RLock()
+	if s.exited {
+		s.mu.RUnlock()
+		return true, nil
+	}
+	exitChan := s.exitChan
+	s.mu.RUnlock()
+
+	if exitChan == nil {
+		return true, nil
+	}
+
+	select {
+	case <-exitChan:
+		return true, nil
+	case <-time.After(timeout):
 		s.mu.RLock()
 		exited := s.exited
-		cmd := s.cmd
 		s.mu.RUnlock()
-
-		if exited && cmd != nil && cmd.ProcessState != nil && cmd.ProcessState.Exited() {
+		if exited {
 			return true, nil
 		}
-
-		if time.Now().After(deadline) {
-			return false, errors.New("process exit verification timed out")
-		}
-		time.Sleep(20 * time.Millisecond)
+		return false, errors.New("process exit verification timed out")
 	}
 }
 

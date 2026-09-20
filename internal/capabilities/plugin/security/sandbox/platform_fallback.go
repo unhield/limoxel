@@ -42,6 +42,11 @@ func (s *FallbackProcessSandbox) Initialize(ctx context.Context) error {
 
 func (s *FallbackProcessSandbox) Filesystem() *FilesystemGuard { return s.fsGuard }
 func (s *FallbackProcessSandbox) Network() *NetworkGuard       { return s.netGuard }
-func (s *FallbackProcessSandbox) AttachProcess(pid int) error  { return nil }
-func (s *FallbackProcessSandbox) Terminate() error             { return nil }
-func (s *FallbackProcessSandbox) Cleanup() error               { return s.fsGuard.CleanupTempDirectory() }
+func (s *FallbackProcessSandbox) AttachProcess(pid int) error {
+	if pid <= 0 {
+		return fmt.Errorf("invalid process ID: %d", pid)
+	}
+	return nil
+}
+func (s *FallbackProcessSandbox) Terminate() error { return nil }
+func (s *FallbackProcessSandbox) Cleanup() error   { return s.fsGuard.CleanupTempDirectory() }

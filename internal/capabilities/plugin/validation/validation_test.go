@@ -122,3 +122,86 @@ func TestValidator_PathSafety_VolumeAndUNC(t *testing.T) {
 		t.Error("expected absolute path /bin/sh to be rejected")
 	}
 }
+
+func TestValidator_PathSafety_WindowsTargetComprehensive(t *testing.T) {
+	hostVer, _ := version.ParseSemVer("1.4.0")
+	val := validation.NewValidator(hostVer, validation.WithPlatform("windows"))
+
+	rejectedPaths := []string{
+		"C:escape.exe",
+		`C:\escape.exe`,
+		"C:/escape.exe",
+		"d:sub/app.exe",
+		`\\server\share\escape.exe`,
+		"//server/share/escape.exe",
+		"/absolute/path",
+		`\absolute\path`,
+		"..",
+		"../escape.exe",
+		`..\escape.exe`,
+		"dir/../../escape.exe",
+		`dir\..\..\escape.exe`,
+		"plugin.exe:ads",
+	}
+
+	for _, p := range rejectedPaths {
+		m := sampleManifest()
+		m.Entrypoint = p
+		if err := val.Validate(m); err == nil {
+			t.Errorf("expected path %q to be rejected for Windows target", p)
+		}
+	}
+
+	acceptedPaths := []string{
+		"plugin.exe",
+		"bin/plugin.exe",
+		`bin\plugin.exe`,
+		"nested/dir/plugin.exe",
+	}
+
+	for _, p := range acceptedPaths {
+		m := sampleManifest()
+		m.Entrypoint = p
+		if err := val.Validate(m); err != nil {
+			t.Errorf("expected path %q to be accepted for Windows target, got error: %v", p, err)
+		}
+	}
+}
+
+func TestValidator_PathSafety_UnixTargetComprehensive(t *testing.T) {
+	hostVer, _ := version.ParseSemVer("1.4.0")
+	val := validation.NewValidator(hostVer, validation.WithPlatform("linux"))
+
+	rejectedPaths := []string{
+		"/bin/sh",
+		"/usr/local/bin/plugin",
+		"..",
+		"../escape",
+		"dir/../../escape",
+		"C:escape",
+		`\\server\share\escape`,
+		"//server/share/escape",
+	}
+
+	for _, p := range rejectedPaths {
+		m := sampleManifest()
+		m.Entrypoint = p
+		if err := val.Validate(m); err == nil {
+			t.Errorf("expected path %q to be rejected for Linux target", p)
+		}
+	}
+
+	acceptedPaths := []string{
+		"plugin",
+		"bin/plugin",
+		"nested/dir/plugin",
+	}
+
+	for _, p := range acceptedPaths {
+		m := sampleManifest()
+		m.Entrypoint = p
+		if err := val.Validate(m); err != nil {
+			t.Errorf("expected path %q to be accepted for Linux target, got error: %v", p, err)
+		}
+	}
+}

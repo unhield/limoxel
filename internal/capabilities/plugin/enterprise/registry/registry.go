@@ -253,10 +253,14 @@ func (r *OrganizationRegistry) PromotePublicPlugin(
 	hasher := sha256.New()
 	multiWriter := io.MultiWriter(f, hasher)
 	size, err := io.Copy(multiWriter, archiveReader)
-	_ = f.Close()
+	closeErr := f.Close()
 	if err != nil {
 		_ = os.Remove(tempPath)
 		return nil, fmt.Errorf("failed to stream promotion artifact: %w", err)
+	}
+	if closeErr != nil {
+		_ = os.Remove(tempPath)
+		return nil, fmt.Errorf("failed to close promotion temp file: %w", closeErr)
 	}
 
 	computedDigest := hex.EncodeToString(hasher.Sum(nil))

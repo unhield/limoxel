@@ -108,12 +108,17 @@ func (c *LocalClient) DownloadArtifact(
 	hasher := sha256.New()
 	mw := io.MultiWriter(f, hasher)
 
-	if _, err := io.Copy(mw, stream); err != nil {
-		f.Close()
+	_, copyErr := io.Copy(mw, stream)
+	closeErr := f.Close()
+
+	if copyErr != nil {
 		_ = os.Remove(tmpFile)
-		return nil, fmt.Errorf("failed downloading artifact stream: %w", err)
+		return nil, fmt.Errorf("failed downloading artifact stream: %w", copyErr)
 	}
-	f.Close()
+	if closeErr != nil {
+		_ = os.Remove(tmpFile)
+		return nil, fmt.Errorf("failed closing download temp file: %w", closeErr)
+	}
 
 	computedDigest := hex.EncodeToString(hasher.Sum(nil))
 	if computedDigest != vInfo.ArtifactDigest {
@@ -247,11 +252,17 @@ func (e *SafeExtractor) Extract(r io.Reader, destDir string) error {
 				return fmt.Errorf("failed creating extracted file %s: %w", targetPath, err)
 			}
 
-			if _, err := io.CopyN(outFile, tarReader, header.Size); err != nil && err != io.EOF {
-				outFile.Close()
-				return fmt.Errorf("failed writing extracted file %s: %w", targetPath, err)
+			_, copyErr := io.CopyN(outFile, tarReader, header.Size)
+			closeErr := outFile.Close()
+
+			if copyErr != nil && copyErr != io.EOF {
+				_ = os.Remove(targetPath)
+				return fmt.Errorf("failed writing extracted file %s: %w", targetPath, copyErr)
 			}
-			outFile.Close()
+			if closeErr != nil {
+				_ = os.Remove(targetPath)
+				return fmt.Errorf("failed closing extracted file %s: %w", targetPath, closeErr)
+			}
 		}
 	}
 
