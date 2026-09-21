@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Limoxel SDK - Developer Portal</title>
+  <title>Limoxel SDK - Engineering Knowledge Infrastructure</title>
   <link rel="stylesheet" href="css/portal.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <div class="nav-container">
       <a href="index.html" class="logo">
         <span>Limoxel SDK</span>
-        <span class="badge">v1.5.0</span>
+        <span class="badge">v1.5.1</span>
       </a>
       <ul class="nav-links">
         <li><a href="index.html" class="active">Home</a></li>
@@ -25,52 +25,62 @@
 
   <main>
     <section class="hero">
-      <h1>Engineering Intelligence SDK for Go</h1>
-      <p>Programmatic access to repository indexing, knowledge graphs, architectural boundary analysis, semantic navigation, and deterministic change-impact reasoning.</p>
+      <div class="hero-tag">Engineering Knowledge Infrastructure</div>
+      <h1>Programmatic Access to Software System Intelligence</h1>
+      <p>Limoxel constructs deterministic, high-fidelity representations of complex codebases—providing programmatic APIs for structural knowledge graphs, multi-domain search, architectural boundary verification, semantic navigation, and change-impact reasoning.</p>
       
       <div class="hero-actions">
-        <a href="docs.html" class="btn btn-primary">Get Started</a>
-        <a href="api-explorer.html" class="btn btn-secondary">Explore APIs</a>
+        <a href="docs.html" class="btn btn-primary">Developer Guide</a>
+        <a href="api-explorer.html" class="btn btn-secondary">Explore API Contracts</a>
       </div>
 
       <div class="code-box">
         <button class="copy-btn">Copy</button>
-        <code>go get github.com/unhield/limoxel/sdk</code>
+        <code>go get github.com/unhield/limoxel/sdk@v1.5.1</code>
       </div>
     </section>
 
-    <section>
-      <h2 style="margin-bottom: 1rem; color: var(--text-bright);">Core Capabilities</h2>
+    <section class="info-section">
+      <h2 class="section-title">The Engineering Knowledge Infrastructure (EKI) Model</h2>
+      <p class="section-desc">As software systems expand across services, packages, and teams, system structure becomes opaque. Limoxel provides an authoritative, queryable model of software reality. The Go SDK exposes these core infrastructure capabilities through 11 contract-driven, thread-safe interfaces.</p>
+
       <div class="grid-3">
         <div class="card">
-          <h3>Repository & Search</h3>
-          <p>Index multi-language source trees, query symbol locations, and perform multi-domain repository search across files, packages, and symbols.</p>
+          <div class="card-icon">01</div>
+          <h3>Deterministic Code Modeling</h3>
+          <p>Parse, index, and resolve symbols, types, packages, and files with syntax-level precision and verifiable provenance.</p>
         </div>
         <div class="card">
-          <h3>Knowledge Graph</h3>
-          <p>Traverse structural entity relationships, compute shortest path blast-radii, and export graphs to Mermaid and Graphviz DOT formats.</p>
+          <div class="card-icon">02</div>
+          <h3>Structural Knowledge Graph</h3>
+          <p>Traverse typed dependency edges, inspect call chains, and export graph topologies directly to Mermaid and Graphviz DOT formats.</p>
         </div>
         <div class="card">
-          <h3>Architecture & Health</h3>
-          <p>Evaluate multidimensional health scores, inspect architectural layer boundaries, and detect circular package dependencies automatically.</p>
+          <div class="card-icon">03</div>
+          <h3>Architectural Governance</h3>
+          <p>Quantify multidimensional codebase health, enforce architectural layer rules, and detect circular dependencies in CI gates.</p>
         </div>
         <div class="card">
-          <h3>Semantic Navigation</h3>
-          <p>Resolve symbol definitions, find all reference sites across the codebase, and compute incoming and outgoing call hierarchies.</p>
+          <div class="card-icon">04</div>
+          <h3>Semantic Code Navigation</h3>
+          <p>Resolve symbol definitions, find reference sites across repository boundaries, and compute incoming and outgoing call hierarchies.</p>
         </div>
         <div class="card">
-          <h3>Reasoning & Impact</h3>
-          <p>Predict blast-radius change impacts, assess semantic breaking changes, and receive automated refactoring safety advice.</p>
+          <div class="card-icon">05</div>
+          <h3>Change-Impact Reasoning</h3>
+          <p>Compute downstream blast radii for proposed structural changes, evaluate breaking change risks, and receive refactoring safety guidance.</p>
         </div>
         <div class="card">
-          <h3>Event Streaming</h3>
-          <p>Subscribe to real-time repository lifecycle, indexing progress, and analysis completion events via thread-safe Go channels.</p>
+          <div class="card-icon">06</div>
+          <h3>Asynchronous Event Streams</h3>
+          <p>Subscribe to typed repository lifecycle, indexing milestones, and analysis completion events over thread-safe Go channels.</p>
         </div>
       </div>
     </section>
 
-    <section style="margin-top: 2rem;">
-      <h2 style="margin-bottom: 1rem; color: var(--text-bright);">Quickstart Snippet</h2>
+    <section class="info-section" style="margin-top: 3rem;">
+      <h2 class="section-title">Verified Quickstart</h2>
+      <p class="section-desc">Initialize a workspace client and assess repository health in fewer than 15 lines of code:</p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
         <code>package main
@@ -79,26 +89,54 @@ import (
     "context"
     "fmt"
     "log"
+    "time"
+
     "github.com/unhield/limoxel/sdk"
 )
 
 func main() {
-    ctx := context.Background()
+    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+    defer cancel()
+
     client, err := sdk.OpenWorkspace(ctx, ".")
     if err != nil {
-        log.Fatal(err)
+        log.Fatalf("failed to open workspace: %v", err)
     }
     defer client.Close()
 
-    health, _ := client.Analysis().RepositoryHealth(ctx)
-    fmt.Printf("Repository Health: %.1f/100 (Grade: %s)\n", health.OverallScore, health.Grade)
+    health, err := client.Analysis().RepositoryHealth(ctx)
+    if err != nil {
+        log.Fatalf("health analysis failed: %v", err)
+    }
+
+    fmt.Printf("Health Score: %.1f/100 (Grade: %s)\n", health.OverallScore, health.Grade)
+    fmt.Printf("Total Files: %d, Total Symbols: %d\n", health.Metrics.TotalFiles, health.Metrics.TotalSymbols)
 }</code>
+      </div>
+    </section>
+
+    <section class="info-section" style="margin-top: 3rem;">
+      <div class="card banner-card">
+        <div>
+          <h3 style="color: var(--text-bright); margin-bottom: 0.5rem;">Explore Further</h3>
+          <p style="color: var(--text-muted);">Review the complete contract catalog in the <a href="api-explorer.html" style="color: var(--accent-blue);">API Explorer</a>, browse real-world recipes in the <a href="examples.html" style="color: var(--accent-blue);">Example Gallery</a>, or inspect our <a href="changelog.html" style="color: var(--accent-blue);">Changelog</a> for v1.5.1 release details.</p>
+        </div>
+        <a href="docs.html" class="btn btn-secondary">Read Docs</a>
       </div>
     </section>
   </main>
 
   <footer>
-    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+    <div class="footer-container">
+      <p>&copy; 2026 Limoxel Project. Engineering Knowledge Infrastructure. Distributed under the MIT License.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html">Documentation</a></li>
+        <li><a href="api-explorer.html">API Contracts</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
   </footer>
 
   <script src="js/portal.js"></script>

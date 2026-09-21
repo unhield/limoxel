@@ -221,7 +221,7 @@ func (c *Client) Version() version.SemVer {
 	return c.internal.Version()
 }
 
-// VersionString returns the canonical version string (e.g. "1.5.0").
+// VersionString returns the canonical version string (e.g. "1.5.1").
 func VersionString() string {
 	return canonversion.Version
 }

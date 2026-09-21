@@ -6,6 +6,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -67,6 +69,13 @@ type jobObjectExtendedLimitInformationStruct struct {
 	PeakJobMemoryUsed     uintptr
 }
 
+// IsolateProcessCmd configures an exec.Cmd for sandbox execution.
+// On Windows, native Win32 Job Objects automatically capture and isolate child processes,
+// so no special SysProcAttr flags are required.
+func IsolateProcessCmd(cmd *exec.Cmd) {
+	// Job Objects manage containment via AssignProcessToJobObject.
+}
+
 // WindowsProcessSandbox implements PluginSandbox using native Win32 Job Objects.
 type WindowsProcessSandbox struct {
 	mu           sync.RWMutex
@@ -81,11 +90,16 @@ type WindowsProcessSandbox struct {
 
 // NewPlatformSandbox instantiates the Windows-native process sandbox.
 func NewPlatformSandbox(cfg SandboxConfig) (PluginSandbox, error) {
+	allowRepoWrite := false
+	if cfg.Isolation != IsolationLevelRestricted {
+		allowRepoWrite = false
+	}
+
 	fs, err := NewFilesystemGuard(
 		cfg.WorkspaceRoot,
 		cfg.DataRoot,
 		cfg.TempRoot,
-		false, // repository write restricted by default
+		allowRepoWrite, // repository write restricted by default
 		cfg.AllowedPaths...,
 	)
 	if err != nil {
@@ -131,7 +145,12 @@ func (s *WindowsProcessSandbox) Initialize(ctx context.Context) error {
 
 	if s.cfg.Limits.MaxMemoryBytes > 0 {
 		info.BasicLimitInformation.LimitFlags |= jobObjectLimitJobMemory
-		info.JobMemoryLimit = uintptr(s.cfg.Limits.MaxMemoryBytes)
+		// Guard against 32-bit uintptr truncation
+		if s.cfg.Limits.MaxMemoryBytes > uint64(^uintptr(0)) {
+			info.JobMemoryLimit = ^uintptr(0)
+		} else {
+			info.JobMemoryLimit = uintptr(s.cfg.Limits.MaxMemoryBytes)
+		}
 	}
 
 	if s.cfg.Limits.MaxProcesses > 0 {
@@ -175,6 +194,20 @@ func (s *WindowsProcessSandbox) AttachProcess(pid int) error {
 	if pid <= 0 {
 		return fmt.Errorf("invalid process ID: %d", pid)
 	}
+	if pid == os.Getpid() {
+		return fmt.Errorf("%w: cannot attach current host process to sandbox", ErrSandboxViolation)
+	}
+
+	// 1. Atomically reserve process slot against limits
+	if err := s.limiter.ReserveProcess(); err != nil {
+		return err
+	}
+	rollback := true
+	defer func() {
+		if rollback {
+			s.limiter.ReleaseProcess()
+		}
+	}()
 
 	// Open process handle with required access rights
 	desiredAccess := uintptr(processSetQuota | processTerminate | standardRightsRequired | synchronizeAccess)
@@ -193,7 +226,7 @@ func (s *WindowsProcessSandbox) AttachProcess(pid int) error {
 	}
 
 	s.attachedPids[pid] = struct{}{}
-	s.limiter.IncrementProcesses()
+	rollback = false
 	return nil
 }
 
@@ -210,6 +243,11 @@ func (s *WindowsProcessSandbox) Terminate() error {
 	if r == 0 {
 		return fmt.Errorf("TerminateJobObject failed: %w", err)
 	}
+
+	for range s.attachedPids {
+		s.limiter.ReleaseProcess()
+	}
+	s.attachedPids = make(map[int]struct{})
 
 	return nil
 }
@@ -233,6 +271,11 @@ func (s *WindowsProcessSandbox) Cleanup() error {
 		}
 		s.jobHandle = 0
 	}
+
+	for range s.attachedPids {
+		s.limiter.ReleaseProcess()
+	}
+	s.attachedPids = make(map[int]struct{})
 
 	if err := s.fsGuard.CleanupTempDirectory(); err != nil && lastErr == nil {
 		lastErr = err

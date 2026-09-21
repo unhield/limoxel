@@ -88,7 +88,7 @@ func Current() SemVer {
 	sv, err := ParseSemVer(canonversion.Version)
 	if err != nil {
 		// Fallback safe default if parsing somehow fails
-		return SemVer{Major: 1, Minor: 5, Patch: 0}
+		return SemVer{Major: 1, Minor: 5, Patch: 1}
 	}
 	return sv
 }

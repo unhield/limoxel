@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	pubmarket "github.com/unhield/limoxel/plugin/marketplace"
@@ -82,29 +83,112 @@ func (s *FileStorage) BaseDir() string {
 	return s.baseDir
 }
 
+func validateIdentifier(id string) error {
+	if id == "" {
+		return fmt.Errorf("%w: identifier cannot be empty", ErrInvalidInput)
+	}
+	if len(id) > 128 {
+		return fmt.Errorf("%w: identifier exceeds maximum length of 128", ErrInvalidInput)
+	}
+
+	// Must start with an alphanumeric character
+	first := id[0]
+	if !((first >= 'a' && first <= 'z') || (first >= 'A' && first <= 'Z') || (first >= '0' && first <= '9')) {
+		return fmt.Errorf("%w: identifier must start with an alphanumeric character", ErrInvalidInput)
+	}
+
+	// Must not end with a dot (prevents Windows trailing dot stripping)
+	if id[len(id)-1] == '.' {
+		return fmt.Errorf("%w: identifier cannot end with a dot", ErrInvalidInput)
+	}
+
+	// Must not contain consecutive dots
+	if strings.Contains(id, "..") {
+		return fmt.Errorf("%w: identifier cannot contain '..'", ErrInvalidInput)
+	}
+
+	// Check each character against allowed set
+	for i := 0; i < len(id); i++ {
+		c := id[i]
+		switch {
+		case (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'):
+		case c == '-' || c == '_' || c == '.':
+		default:
+			return fmt.Errorf("%w: identifier contains invalid character %q", ErrInvalidInput, c)
+		}
+	}
+
+	// Lexical locality and containment check
+	if !filepath.IsLocal(id) {
+		return fmt.Errorf("%w: identifier is not a local path component", ErrInvalidInput)
+	}
+	if filepath.Base(id) != id {
+		return fmt.Errorf("%w: identifier cannot contain path separators", ErrInvalidInput)
+	}
+
+	return nil
+}
+
+func validateDigest(digest string) error {
+	if len(digest) != 64 {
+		return fmt.Errorf("%w: artifact digest must be exactly 64 hex characters", ErrInvalidInput)
+	}
+	for i := 0; i < len(digest); i++ {
+		c := digest[i]
+		if (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F') {
+			continue
+		}
+		return fmt.Errorf("%w: artifact digest contains non-hexadecimal character %q", ErrInvalidInput, c)
+	}
+	if !filepath.IsLocal(digest) {
+		return fmt.Errorf("%w: artifact digest is not a local path component", ErrInvalidInput)
+	}
+	if filepath.Base(digest) != digest {
+		return fmt.Errorf("%w: artifact digest cannot contain path separators", ErrInvalidInput)
+	}
+	return nil
+}
+
+func (s *FileStorage) resolveStoragePath(subDir, filename string) (string, string, error) {
+	relPath := filepath.Join(subDir, filename)
+	if !filepath.IsLocal(relPath) {
+		return "", "", fmt.Errorf("%w: storage path %q is not local", ErrInvalidInput, relPath)
+	}
+	targetPath := filepath.Join(s.baseDir, relPath)
+	return relPath, targetPath, nil
+}
+
 // SavePluginDetail atomically writes plugin detail JSON to disk.
 func (s *FileStorage) SavePluginDetail(detail pubmarket.PluginDetail) error {
-	if detail.ID == "" {
-		return fmt.Errorf("%w: missing plugin ID", ErrInvalidInput)
+	if err := validateIdentifier(detail.ID); err != nil {
+		return fmt.Errorf("%w: invalid plugin ID: %v", ErrInvalidInput, err)
+	}
+
+	relPath, _, err := s.resolveStoragePath(filepath.Join("metadata", "plugins"), fmt.Sprintf("%s.json", detail.ID))
+	if err != nil {
+		return err
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	target := filepath.Join(s.baseDir, "metadata", "plugins", fmt.Sprintf("%s.json", detail.ID))
-	return atomicWriteJSON(target, detail)
+	return s.atomicWriteJSON(relPath, detail)
 }
 
 // GetPluginDetail reads and deserializes a plugin detail file.
 func (s *FileStorage) GetPluginDetail(id string) (*pubmarket.PluginDetail, error) {
-	if id == "" {
-		return nil, ErrInvalidInput
+	if err := validateIdentifier(id); err != nil {
+		return nil, fmt.Errorf("%w: invalid plugin ID: %v", ErrInvalidInput, err)
+	}
+
+	_, target, err := s.resolveStoragePath(filepath.Join("metadata", "plugins"), fmt.Sprintf("%s.json", id))
+	if err != nil {
+		return nil, err
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	target := filepath.Join(s.baseDir, "metadata", "plugins", fmt.Sprintf("%s.json", id))
 	data, err := os.ReadFile(target)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -137,6 +221,9 @@ func (s *FileStorage) ListPluginDetails() ([]pubmarket.PluginDetail, error) {
 		if e.IsDir() || filepath.Ext(e.Name()) != ".json" {
 			continue
 		}
+		if !filepath.IsLocal(e.Name()) {
+			continue
+		}
 		filePath := filepath.Join(pluginsDir, e.Name())
 		data, err := os.ReadFile(filePath)
 		if err != nil {
@@ -153,38 +240,63 @@ func (s *FileStorage) ListPluginDetails() ([]pubmarket.PluginDetail, error) {
 
 // DeletePlugin removes metadata, reviews, and ratings for a plugin.
 func (s *FileStorage) DeletePlugin(id string) error {
+	if err := validateIdentifier(id); err != nil {
+		return fmt.Errorf("%w: invalid plugin ID: %v", ErrInvalidInput, err)
+	}
+
+	_, pluginTarget, err := s.resolveStoragePath(filepath.Join("metadata", "plugins"), fmt.Sprintf("%s.json", id))
+	if err != nil {
+		return err
+	}
+	_, reviewsTarget, err := s.resolveStoragePath(filepath.Join("community", "reviews"), fmt.Sprintf("%s.json", id))
+	if err != nil {
+		return err
+	}
+	_, ratingsTarget, err := s.resolveStoragePath(filepath.Join("community", "ratings"), fmt.Sprintf("%s.json", id))
+	if err != nil {
+		return err
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	_ = os.Remove(filepath.Join(s.baseDir, "metadata", "plugins", fmt.Sprintf("%s.json", id)))
-	_ = os.Remove(filepath.Join(s.baseDir, "community", "reviews", fmt.Sprintf("%s.json", id)))
-	_ = os.Remove(filepath.Join(s.baseDir, "community", "ratings", fmt.Sprintf("%s.json", id)))
+	_ = os.Remove(pluginTarget)
+	_ = os.Remove(reviewsTarget)
+	_ = os.Remove(ratingsTarget)
 	return nil
 }
 
 // SavePublisher writes publisher profile JSON to disk.
 func (s *FileStorage) SavePublisher(pub pubmarket.PublisherProfile) error {
-	if pub.ID == "" {
-		return fmt.Errorf("%w: missing publisher ID", ErrInvalidInput)
+	if err := validateIdentifier(pub.ID); err != nil {
+		return fmt.Errorf("%w: invalid publisher ID: %v", ErrInvalidInput, err)
+	}
+
+	relPath, _, err := s.resolveStoragePath(filepath.Join("metadata", "publishers"), fmt.Sprintf("%s.json", pub.ID))
+	if err != nil {
+		return err
 	}
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	target := filepath.Join(s.baseDir, "metadata", "publishers", fmt.Sprintf("%s.json", pub.ID))
-	return atomicWriteJSON(target, pub)
+	return s.atomicWriteJSON(relPath, pub)
 }
 
 // GetPublisher retrieves publisher profile by ID.
 func (s *FileStorage) GetPublisher(id string) (*pubmarket.PublisherProfile, error) {
-	if id == "" {
-		return nil, ErrInvalidInput
+	if err := validateIdentifier(id); err != nil {
+		return nil, fmt.Errorf("%w: invalid publisher ID: %v", ErrInvalidInput, err)
+	}
+
+	_, target, err := s.resolveStoragePath(filepath.Join("metadata", "publishers"), fmt.Sprintf("%s.json", id))
+	if err != nil {
+		return nil, err
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	target := filepath.Join(s.baseDir, "metadata", "publishers", fmt.Sprintf("%s.json", id))
 	data, err := os.ReadFile(target)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -216,6 +328,9 @@ func (s *FileStorage) ListPublishers() ([]pubmarket.PublisherProfile, error) {
 		if e.IsDir() || filepath.Ext(e.Name()) != ".json" {
 			continue
 		}
+		if !filepath.IsLocal(e.Name()) {
+			continue
+		}
 		data, err := os.ReadFile(filepath.Join(dir, e.Name()))
 		if err != nil {
 			continue
@@ -230,10 +345,17 @@ func (s *FileStorage) ListPublishers() ([]pubmarket.PublisherProfile, error) {
 
 // SaveArtifact streams package contents into an immutable content-addressed artifact file.
 func (s *FileStorage) SaveArtifact(expectedDigest string, r io.Reader) (string, int64, error) {
+	if expectedDigest != "" {
+		if err := validateDigest(expectedDigest); err != nil {
+			return "", 0, fmt.Errorf("%w: invalid expected digest: %v", ErrInvalidInput, err)
+		}
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	tmpFile, err := os.CreateTemp(filepath.Join(s.baseDir, "artifacts"), "upload-*.tmp")
+	artifactsDir := filepath.Join(s.baseDir, "artifacts")
+	tmpFile, err := os.CreateTemp(artifactsDir, "upload-*.tmp")
 	if err != nil {
 		return "", 0, fmt.Errorf("failed to create temporary upload file: %w", err)
 	}
@@ -255,13 +377,23 @@ func (s *FileStorage) SaveArtifact(expectedDigest string, r io.Reader) (string, 
 	}
 
 	actualDigest := hex.EncodeToString(hasher.Sum(nil))
+	if err := validateDigest(actualDigest); err != nil {
+		_ = os.Remove(tmpPath)
+		return "", 0, fmt.Errorf("%w: computed digest invalid: %v", ErrInvalidInput, err)
+	}
+
 	if expectedDigest != "" && actualDigest != expectedDigest {
 		_ = os.Remove(tmpPath)
 		return "", 0, fmt.Errorf("%w: declared %s, computed %s", ErrDigestMismatch, expectedDigest, actualDigest)
 	}
 
-	finalPath := filepath.Join(s.baseDir, "artifacts", fmt.Sprintf("%s.tar.gz", actualDigest))
-	lockErr := WithLock(finalPath, func() error {
+	relPath, finalPath, err := s.resolveStoragePath("artifacts", fmt.Sprintf("%s.tar.gz", actualDigest))
+	if err != nil {
+		_ = os.Remove(tmpPath)
+		return "", 0, err
+	}
+
+	lockErr := WithStorageLock(s.baseDir, relPath, func() error {
 		if _, statErr := os.Stat(finalPath); statErr == nil {
 			// Artifact already present in immutable storage
 			_ = os.Remove(tmpPath)
@@ -279,14 +411,18 @@ func (s *FileStorage) SaveArtifact(expectedDigest string, r io.Reader) (string, 
 
 // GetArtifact opens an artifact for reading.
 func (s *FileStorage) GetArtifact(digest string) (io.ReadCloser, int64, error) {
-	if digest == "" {
-		return nil, 0, ErrInvalidInput
+	if err := validateDigest(digest); err != nil {
+		return nil, 0, fmt.Errorf("%w: invalid digest: %v", ErrInvalidInput, err)
+	}
+
+	_, target, err := s.resolveStoragePath("artifacts", fmt.Sprintf("%s.tar.gz", digest))
+	if err != nil {
+		return nil, 0, err
 	}
 
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	target := filepath.Join(s.baseDir, "artifacts", fmt.Sprintf("%s.tar.gz", digest))
 	info, err := os.Stat(target)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -305,32 +441,53 @@ func (s *FileStorage) GetArtifact(digest string) (io.ReadCloser, int64, error) {
 
 // ArtifactExists checks if an artifact with digest exists on disk.
 func (s *FileStorage) ArtifactExists(digest string) bool {
-	if digest == "" {
+	if err := validateDigest(digest); err != nil {
 		return false
 	}
+
+	_, target, err := s.resolveStoragePath("artifacts", fmt.Sprintf("%s.tar.gz", digest))
+	if err != nil {
+		return false
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	target := filepath.Join(s.baseDir, "artifacts", fmt.Sprintf("%s.tar.gz", digest))
-	_, err := os.Stat(target)
+	_, err = os.Stat(target)
 	return err == nil
 }
 
 // SaveReviews writes the list of reviews for a plugin.
 func (s *FileStorage) SaveReviews(pluginID string, reviews []pubmarket.Review) error {
+	if err := validateIdentifier(pluginID); err != nil {
+		return fmt.Errorf("%w: invalid plugin ID: %v", ErrInvalidInput, err)
+	}
+
+	relPath, _, err := s.resolveStoragePath(filepath.Join("community", "reviews"), fmt.Sprintf("%s.json", pluginID))
+	if err != nil {
+		return err
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	target := filepath.Join(s.baseDir, "community", "reviews", fmt.Sprintf("%s.json", pluginID))
-	return atomicWriteJSON(target, reviews)
+	return s.atomicWriteJSON(relPath, reviews)
 }
 
 // GetReviews retrieves stored reviews for a plugin.
 func (s *FileStorage) GetReviews(pluginID string) ([]pubmarket.Review, error) {
+	if err := validateIdentifier(pluginID); err != nil {
+		return nil, fmt.Errorf("%w: invalid plugin ID: %v", ErrInvalidInput, err)
+	}
+
+	_, target, err := s.resolveStoragePath(filepath.Join("community", "reviews"), fmt.Sprintf("%s.json", pluginID))
+	if err != nil {
+		return nil, err
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	target := filepath.Join(s.baseDir, "community", "reviews", fmt.Sprintf("%s.json", pluginID))
 	data, err := os.ReadFile(target)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -348,19 +505,35 @@ func (s *FileStorage) GetReviews(pluginID string) ([]pubmarket.Review, error) {
 
 // SaveRatings writes the user rating map for a plugin.
 func (s *FileStorage) SaveRatings(pluginID string, ratings map[string]int) error {
+	if err := validateIdentifier(pluginID); err != nil {
+		return fmt.Errorf("%w: invalid plugin ID: %v", ErrInvalidInput, err)
+	}
+
+	relPath, _, err := s.resolveStoragePath(filepath.Join("community", "ratings"), fmt.Sprintf("%s.json", pluginID))
+	if err != nil {
+		return err
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	target := filepath.Join(s.baseDir, "community", "ratings", fmt.Sprintf("%s.json", pluginID))
-	return atomicWriteJSON(target, ratings)
+	return s.atomicWriteJSON(relPath, ratings)
 }
 
 // GetRatings retrieves stored user ratings for a plugin.
 func (s *FileStorage) GetRatings(pluginID string) (map[string]int, error) {
+	if err := validateIdentifier(pluginID); err != nil {
+		return nil, fmt.Errorf("%w: invalid plugin ID: %v", ErrInvalidInput, err)
+	}
+
+	_, target, err := s.resolveStoragePath(filepath.Join("community", "ratings"), fmt.Sprintf("%s.json", pluginID))
+	if err != nil {
+		return nil, err
+	}
+
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	target := filepath.Join(s.baseDir, "community", "ratings", fmt.Sprintf("%s.json", pluginID))
 	data, err := os.ReadFile(target)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -376,14 +549,20 @@ func (s *FileStorage) GetRatings(pluginID string) (map[string]int, error) {
 	return ratings, nil
 }
 
-func atomicWriteJSON(targetPath string, v any) error {
-	return WithLock(targetPath, func() error {
+func (s *FileStorage) atomicWriteJSON(relPath string, v any) error {
+	if !filepath.IsLocal(relPath) {
+		return fmt.Errorf("%w: storage path %q is not local", ErrInvalidInput, relPath)
+	}
+
+	targetPath := filepath.Join(s.baseDir, relPath)
+	dir := filepath.Dir(targetPath)
+
+	return WithStorageLock(s.baseDir, relPath, func() error {
 		data, err := json.MarshalIndent(v, "", "  ")
 		if err != nil {
 			return fmt.Errorf("failed to marshal JSON: %w", err)
 		}
 
-		dir := filepath.Dir(targetPath)
 		tmpFile, err := os.CreateTemp(dir, "write-*.tmp")
 		if err != nil {
 			return fmt.Errorf("failed to create temporary file: %w", err)

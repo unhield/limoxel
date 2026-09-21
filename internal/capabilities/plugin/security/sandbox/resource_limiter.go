@@ -31,31 +31,70 @@ func (r *ResourceLimiter) Limits() ResourceLimits {
 	return r.limits
 }
 
+// ActiveProcesses returns the currently tracked active process count.
+func (r *ResourceLimiter) ActiveProcesses() uint32 {
+	return atomic.LoadUint32(&r.activeProcs)
+}
+
 // CheckProcessSpawn verifies whether another child process may be spawned under current limits.
 func (r *ResourceLimiter) CheckProcessSpawn() error {
 	r.mu.RLock()
-	defer r.mu.RUnlock()
+	max := r.limits.MaxProcesses
+	r.mu.RUnlock()
 
 	current := atomic.LoadUint32(&r.activeProcs)
-	if r.limits.MaxProcesses > 0 && current >= r.limits.MaxProcesses {
+	if max > 0 && current >= max {
 		return fmt.Errorf("%w: active processes (%d) reached configured limit (%d)",
-			ErrResourceExhausted, current, r.limits.MaxProcesses)
+			ErrResourceExhausted, current, max)
 	}
 
 	return nil
 }
 
-// IncrementProcesses increments the active process count.
-func (r *ResourceLimiter) IncrementProcesses() {
-	atomic.AddUint32(&r.activeProcs, 1)
+// ReserveProcess atomically checks and reserves a child process slot.
+func (r *ResourceLimiter) ReserveProcess() error {
+	r.mu.RLock()
+	max := r.limits.MaxProcesses
+	r.mu.RUnlock()
+
+	for {
+		current := atomic.LoadUint32(&r.activeProcs)
+		if max > 0 && current >= max {
+			return fmt.Errorf("%w: active processes (%d) reached configured limit (%d)",
+				ErrResourceExhausted, current, max)
+		}
+		if atomic.CompareAndSwapUint32(&r.activeProcs, current, current+1) {
+			return nil
+		}
+	}
 }
 
-// DecrementProcesses decrements the active process count.
-func (r *ResourceLimiter) DecrementProcesses() {
-	current := atomic.LoadUint32(&r.activeProcs)
-	if current > 0 {
-		atomic.AddUint32(&r.activeProcs, ^uint32(0))
+// IncrementProcesses increments the active process count.
+func (r *ResourceLimiter) IncrementProcesses() {
+	for {
+		current := atomic.LoadUint32(&r.activeProcs)
+		if atomic.CompareAndSwapUint32(&r.activeProcs, current, current+1) {
+			return
+		}
 	}
+}
+
+// DecrementProcesses decrements the active process count, atomically preventing underflow.
+func (r *ResourceLimiter) DecrementProcesses() {
+	for {
+		current := atomic.LoadUint32(&r.activeProcs)
+		if current == 0 {
+			return // Already zero; never underflow to uint32 max
+		}
+		if atomic.CompareAndSwapUint32(&r.activeProcs, current, current-1) {
+			return
+		}
+	}
+}
+
+// ReleaseProcess releases a previously reserved process slot (alias for DecrementProcesses).
+func (r *ResourceLimiter) ReleaseProcess() {
+	r.DecrementProcesses()
 }
 
 // CheckMessageSize verifies that an incoming or outgoing IPC payload does not exceed the allowed size.
@@ -105,4 +144,24 @@ func (r *ResourceLimiter) WithExecutionTimeout(parent context.Context) (context.
 	}
 
 	return context.WithTimeout(parent, timeout)
+}
+
+// StartupTimeout returns the configured startup handshake timeout.
+func (r *ResourceLimiter) StartupTimeout() time.Duration {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if r.limits.StartupTimeout <= 0 {
+		return 5 * time.Second
+	}
+	return r.limits.StartupTimeout
+}
+
+// ShutdownTimeout returns the configured graceful shutdown timeout.
+func (r *ResourceLimiter) ShutdownTimeout() time.Duration {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if r.limits.ShutdownTimeout <= 0 {
+		return 3 * time.Second
+	}
+	return r.limits.ShutdownTimeout
 }
