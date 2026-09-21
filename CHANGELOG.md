@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.5.1] - 2026-09-21
+
+### Changed
+
+- Hardened marketplace storage path handling with explicit validation at the storage boundary.
+- Strengthened process-file locking so lock paths remain within the intended marketplace storage boundary.
+- Improved repository-wide CI test stability by bounding Go package-level test concurrency and enforcing a finite test timeout while preserving race detection, coverage collection, and full-package validation.
+
+### Fixed
+
+- Fixed unsafe filesystem path construction in marketplace storage where caller-controlled identifiers could influence storage paths.
+- Fixed unsafe path handling across plugin artifact, metadata, review, rating, and related marketplace storage operations.
+- Fixed storage path handling for process locks and stale-lock cleanup.
+- Improved atomic marketplace storage writes to maintain safe path resolution and storage-root containment.
+- Preserved valid marketplace identifiers while rejecting unsafe path components, traversal attempts, absolute paths, Windows volume paths, UNC paths, and other invalid filesystem inputs.
+- Strengthened artifact digest validation to ensure content-addressed storage uses valid SHA-256 digest identifiers.
+
+### Security
+
+- Addressed high-severity filesystem path injection findings in marketplace storage.
+- Added defensive validation for storage identifiers and artifact digests at the filesystem boundary rather than relying solely on upstream validation.
+- Added platform-aware path locality and storage-root containment checks to prevent storage operations from escaping the configured marketplace storage directory.
+- Hardened marketplace storage against path traversal and unsafe cross-platform filesystem path inputs.
+- Added regression coverage for traversal paths, absolute paths, Windows volume paths, UNC paths, invalid identifiers, invalid artifact digests, and storage-root escape attempts.
+
+### Documentation
+
+- No documentation changes were required for this security and stability correction.
+
+---
+
 ## [1.5.0] - 2026-09-20
 
 ### Added
@@ -632,6 +663,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+[1.5.1]: https://github.com/unhield/limoxel/releases/tag/v1.5.1
 [1.5.0]: https://github.com/unhield/limoxel/releases/tag/v1.5.0
 [1.4.0]: https://github.com/unhield/limoxel/releases/tag/v1.4.0
 [1.3.0]: https://github.com/unhield/limoxel/releases/tag/v1.3.0

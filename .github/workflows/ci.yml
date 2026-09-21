@@ -18,11 +18,7 @@ jobs:
   validate:
     name: Validate Repository
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        go-version:
-          - "1.26.5"
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Repository
@@ -31,7 +27,7 @@ jobs:
       - name: Set Up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: "1.26.5"
           cache: true
 
       - name: Verify Go Version
@@ -61,11 +57,181 @@ jobs:
       - name: Build
         run: go build ./...
 
-      - name: Unit & Integration Tests (with Race Detector and Coverage)
-        run: go test -race -coverprofile=coverage.out -covermode=atomic ./... -v
+      - name: Validation Summary
+        run: |
+          echo "Repository static validation and build completed successfully."
 
-      - name: Upload Coverage
-        if: success()
+  test:
+    name: "Test Shard ${{ matrix.shard }} of 4"
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+          cache: true
+
+      - name: Download Dependencies
+        run: go mod download
+
+      - name: Run Sharded Tests (Race Detector and Coverage)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TOTAL_SHARDS=4
+          SHARD_INDEX=${{ matrix.shard }}
+
+          # Dynamically discover all repository packages deterministically sorted
+          mapfile -t ALL_PKGS < <(go list ./... | LC_ALL=C sort)
+          TOTAL_PKGS=${#ALL_PKGS[@]}
+
+          # Round-robin distribution across exactly 4 shards
+          SHARD_PKGS=()
+          for (( i=0; i<TOTAL_PKGS; i++ )); do
+            if (( i % TOTAL_SHARDS == SHARD_INDEX )); then
+              SHARD_PKGS+=("${ALL_PKGS[i]}")
+            fi
+          done
+
+          ASSIGNED_COUNT=${#SHARD_PKGS[@]}
+
+          echo "========================================"
+          echo "Limoxel Test Shard"
+          echo "Shard: $SHARD_INDEX of $TOTAL_SHARDS"
+          echo "Total Repository Packages: $TOTAL_PKGS"
+          echo "Packages Assigned to Shard $SHARD_INDEX: $ASSIGNED_COUNT"
+          echo "========================================"
+          echo ""
+          echo "Packages assigned:"
+          for pkg in "${SHARD_PKGS[@]}"; do
+            echo "  $pkg"
+          done
+          echo ""
+
+          # Handle edge case: empty shard
+          if [ "$ASSIGNED_COUNT" -eq 0 ]; then
+            echo "No packages assigned to this shard. Skipping test execution."
+            echo "mode: atomic" > "coverage-shard-${SHARD_INDEX}.out"
+            echo "========================================"
+            echo "Limoxel Test Shard Completion Summary"
+            echo "Shard: $SHARD_INDEX"
+            echo "Packages Tested: 0"
+            echo "Status: COMPLETED (EMPTY SHARD)"
+            echo "========================================"
+            exit 0
+          fi
+
+          echo "Starting race + atomic coverage tests (timeout=15m, -p 2)..."
+
+          # Execute test contract with race detector, coverage, atomic mode, and bounded concurrency
+          go test \
+            -p 2 \
+            -timeout=15m \
+            -race \
+            -coverprofile="coverage-shard-${SHARD_INDEX}.out" \
+            -covermode=atomic \
+            -v \
+            "${SHARD_PKGS[@]}"
+
+          # Verify coverage profile was created and non-empty
+          if [ ! -s "coverage-shard-${SHARD_INDEX}.out" ]; then
+            echo "Error: coverage profile coverage-shard-${SHARD_INDEX}.out was not generated or is empty."
+            exit 1
+          fi
+
+          echo ""
+          echo "========================================"
+          echo "Limoxel Test Shard Completion Summary"
+          echo "Shard: $SHARD_INDEX"
+          echo "Packages Tested: $ASSIGNED_COUNT"
+          echo "Test Command: go test -p 2 -timeout=15m -race -coverprofile=coverage-shard-${SHARD_INDEX}.out -covermode=atomic -v <packages>"
+          echo "Status: COMPLETED SUCCESSFULLY"
+          echo "========================================"
+
+      - name: Upload Shard Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-shard-${{ matrix.shard }}
+          path: coverage-shard-${{ matrix.shard }}.out
+          if-no-files-found: error
+
+  aggregate-coverage:
+    name: Aggregate Coverage
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.5"
+          cache: true
+
+      - name: Download Shard Coverage Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-shard-*
+          path: coverage-shards
+          merge-multiple: true
+
+      - name: Consolidate and Validate Coverage Profile
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TOTAL_SHARDS=4
+          MISSING_COUNT=0
+
+          echo "Verifying presence of all $TOTAL_SHARDS shard coverage files..."
+          for (( i=0; i<TOTAL_SHARDS; i++ )); do
+            shard_file="coverage-shards/coverage-shard-${i}.out"
+            if [ ! -f "$shard_file" ]; then
+              echo "Error: Missing expected coverage artifact: $shard_file"
+              MISSING_COUNT=$(( MISSING_COUNT + 1 ))
+            else
+              line_count=$(wc -l < "$shard_file")
+              echo "  Found $shard_file ($line_count lines)"
+            fi
+          done
+
+          if [ "$MISSING_COUNT" -gt 0 ]; then
+            echo "Error: $MISSING_COUNT expected shard coverage artifacts are missing."
+            exit 1
+          fi
+
+          echo "Combining shard coverage profiles into consolidated coverage.out..."
+          # 1. Output the single atomic mode header
+          echo "mode: atomic" > coverage.out
+
+          # 2. Append all statement coverage lines (stripping duplicate mode: headers)
+          for (( i=0; i<TOTAL_SHARDS; i++ )); do
+            shard_file="coverage-shards/coverage-shard-${i}.out"
+            grep -v "^mode:" "$shard_file" >> coverage.out || true
+          done
+
+          TOTAL_LINES=$(wc -l < coverage.out)
+          echo "Consolidated coverage.out generated with $TOTAL_LINES lines."
+
+          # 3. Validate consolidated profile using Go toolchain
+          go tool cover -func=coverage.out | tail -n 1
+
+      - name: Upload Consolidated Coverage
         uses: actions/upload-artifact@v4
         with:
           name: test-results
@@ -74,4 +240,4 @@ jobs:
 
       - name: Validation Summary
         run: |
-          echo "Repository validation completed successfully."
+          echo "Repository validation, 4-shard test execution, and coverage aggregation completed successfully."

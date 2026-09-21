@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Documentation - Limoxel SDK</title>
+  <title>Developer Guide - Limoxel SDK</title>
   <link rel="stylesheet" href="css/portal.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <div class="nav-container">
       <a href="index.html" class="logo">
         <span>Limoxel SDK</span>
-        <span class="badge">v1.5.0</span>
+        <span class="badge">v1.5.1</span>
       </a>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
@@ -24,54 +24,128 @@
   </header>
 
   <main>
-    <h1 style="color: var(--text-bright); margin-bottom: 1.5rem;">Developer Guide & Best Practices</h1>
+    <div class="page-header">
+      <div class="hero-tag">Developer Guide</div>
+      <h1>SDK Architecture & Engineering Guide</h1>
+      <p>Principles, lifecycle contracts, concurrency guarantees, and integration patterns for building on Limoxel's Engineering Knowledge Infrastructure.</p>
+    </div>
 
     <section class="card" style="margin-bottom: 2rem;">
-      <h3>1. Architecture & Design Principles</h3>
+      <h3>1. Architecture & The EKI Coordination Model</h3>
       <p style="margin-top: 0.5rem;">
-        The Limoxel SDK exposes high-level, thread-safe public contracts that wrap underlying repository indexers, graph databases, and intelligence reasoning engines. Consumers interact solely with the <code>*sdk.Client</code> coordinator and its capability accessors.
-      </p>
-    </section>
-
-    <section class="card" style="margin-bottom: 2rem;">
-      <h3>2. Lifecycle & Resource Management</h3>
-      <p style="margin-top: 0.5rem;">
-        Always invoke <code>defer client.Close()</code> immediately after initializing a client. This releases file descriptor indexers, background worker pools, and memory caches cleanly.
+        The Limoxel SDK acts as a thread-safe, programmatic client over the underlying repository indexing, AST parsing, graph engine, and reasoning subsystems. Consumers interact through the unified <code>*sdk.Client</code> coordinator, which exposes 11 domain-specific capability contracts.
       </p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
-        <code>client, err := sdk.New(sdk.WithWorkspace("/path/to/repo"))
-if err != nil {
-    return err
-}
-defer client.Close() // Release background workers and file handles</code>
+        <code>// High-level architecture: Client exposes typed capability interfaces
+client.Repository()   // RepositoryManagementContract: workspace sessions and metadata
+client.Files()        // FileContract: discovery, classification, and file relationships
+client.Packages()     // PackageContract: hierarchy trees and dependent metrics
+client.Symbols()      // SymbolContract: lookup, reference sites, and inheritance
+client.Search()       // SearchContract: multi-domain unified query engine
+client.Graph()        // GraphContract: topological traversal and Mermaid/DOT exports
+client.Analysis()     // AnalysisContract: architecture boundaries and health reports
+client.Navigation()   // NavigationContract: go-to-definition and call hierarchies
+client.Reasoning()    // ReasoningContract: blast radius and refactoring advice
+client.Events()       // EventContract: asynchronous lifecycle event streaming
+client.Intelligence() // IntelligenceContract: unified multi-capability facade</code>
       </div>
     </section>
 
     <section class="card" style="margin-bottom: 2rem;">
-      <h3>3. Context Cancellation & Timeouts</h3>
+      <h3>2. Client Lifecycle & Workspace Initialization</h3>
       <p style="margin-top: 0.5rem;">
-        Every SDK method accepts a standard <code>context.Context</code>. For long-running operations like deep graph traversal or whole-repository health analysis, pass a context with a suitable timeout (e.g. 30s to 60s).
+        Clients can be initialized with functional configuration options or directly for a local workspace path. Always register <code>defer client.Close()</code> immediately following initialization to release underlying indexers, memory caches, and background worker routines cleanly.
       </p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+defer cancel()
+
+// Option A: Open local workspace directly
+client, err := sdk.OpenWorkspace(ctx, "/path/to/repository")
+if err != nil {
+    return fmt.Errorf("failed to open workspace: %w", err)
+}
+defer client.Close() // Idempotent; guarantees clean resource teardown
+
+// Option B: Initialize with functional configuration options
+client, err := sdk.New(
+    sdk.WithWorkspace("/path/to/repository"),
+)</code>
+      </div>
     </section>
 
     <section class="card" style="margin-bottom: 2rem;">
-      <h3>4. Error Handling & Semantic Categories</h3>
+      <h3>3. Context Management, Deadlines & Cancellation</h3>
       <p style="margin-top: 0.5rem;">
-        Limoxel errors conform to the <code>sdk.SDKError</code> interface. Inspect <code>sdkErr.Category()</code> to programmatically handle missing entities (<code>CategoryNotFound</code>), invalid arguments (<code>CategoryInvalidInput</code>), or lifecycle state issues (<code>CategoryInvalidState</code>).
+        Every method in the Limoxel SDK requires a <code>context.Context</code> as its first parameter. All long-running operations—including repository indexing, deep graph path traversals, and whole-codebase architecture analysis—honor context cancellation immediately and clean up transient resources.
       </p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>// Always supply bounded contexts to prevent runaway traversals
+ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+defer cancel()
+
+paths, err := client.Graph().FindPaths(ctx, "pkg/auth", "pkg/storage", 5)
+if errors.Is(err, context.DeadlineExceeded) {
+    log.Println("Graph traversal exceeded deadline; bounded search terminated safely.")
+}</code>
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom: 2rem;">
+      <h3>4. Structured Error Handling & Error Categories</h3>
+      <p style="margin-top: 0.5rem;">
+        All errors returned by the Limoxel SDK implement the <code>sdk.SDKError</code> interface. Consumers can inspect error categories programmatically to differentiate between missing entities, invalid arguments, internal system faults, or lifecycle state violations without string parsing.
+      </p>
+      <div class="code-box">
+        <button class="copy-btn">Copy</button>
+        <code>sym, err := client.Symbols().LookupSymbol(ctx, "NonExistentSymbol")
+if err != nil {
+    var sdkErr sdk.SDKError
+    if errors.As(err, &sdkErr) {
+        switch sdkErr.Category() {
+        case sdk.CategoryNotFound:
+            log.Printf("Entity not found: %s", sdkErr.Message())
+        case sdk.CategoryInvalidInput:
+            log.Printf("Invalid symbol query: %s", sdkErr.Message())
+        case sdk.CategoryInvalidState:
+            log.Printf("Client is in invalid state: %s", sdkErr.Message())
+        default:
+            log.Printf("SDK error [%s]: %s", sdkErr.Category(), sdkErr.Error())
+        }
+    }
+}</code>
+      </div>
     </section>
 
     <section class="card" style="margin-bottom: 2rem;">
       <h3>5. Concurrency & Goroutine Safety</h3>
       <p style="margin-top: 0.5rem;">
-        A single <code>*sdk.Client</code> instance is completely safe for concurrent access across multiple goroutines. You can share one client across HTTP request handlers or background workers without external mutex locking.
+        A single <code>*sdk.Client</code> coordinator is strictly thread-safe and designed for high-concurrency workloads. Multiple goroutines, HTTP worker pools, or analysis pipelines can share the same client instance concurrently without external mutex locks.
+      </p>
+    </section>
+
+    <section class="card" style="margin-bottom: 2rem;">
+      <h3>6. Semantic Versioning & Compatibility Policy</h3>
+      <p style="margin-top: 0.5rem;">
+        Limoxel adheres strictly to <a href="https://semver.org/" target="_blank" rel="noopener" style="color: var(--accent-blue);">Semantic Versioning 2.0.0</a>. Minor releases introduce backward-compatible capability additions, and patch releases introduce backward-compatible bug and security fixes. Public contracts under <code>sdk/</code> maintain complete binary and source compatibility across all 1.x releases.
       </p>
     </section>
   </main>
 
   <footer>
-    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+    <div class="footer-container">
+      <p>&copy; 2026 Limoxel Project. Engineering Knowledge Infrastructure. Distributed under the MIT License.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html">Documentation</a></li>
+        <li><a href="api-explorer.html">API Contracts</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
   </footer>
 
   <script src="js/portal.js"></script>

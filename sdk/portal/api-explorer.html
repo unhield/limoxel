@@ -11,7 +11,7 @@
     <div class="nav-container">
       <a href="index.html" class="logo">
         <span>Limoxel SDK</span>
-        <span class="badge">v1.5.0</span>
+        <span class="badge">v1.5.1</span>
       </a>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
@@ -24,12 +24,16 @@
   </header>
 
   <main>
-    <h1 style="color: var(--text-bright); margin-bottom: 1rem;">Public SDK Contracts & API Explorer</h1>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Interactive catalog of all 11 public Go contracts exposed by the Limoxel SDK.</p>
+    <div class="page-header">
+      <div class="hero-tag">API Reference</div>
+      <h1>Public SDK Contracts & API Explorer</h1>
+      <p>Interactive catalog of all 11 stable Go contracts exposed by the Limoxel Engineering Knowledge Infrastructure.</p>
+    </div>
 
-    <input type="text" id="search-filter" class="search-bar" placeholder="Filter contracts, methods, or signatures (e.g., 'Health', 'Graph', 'Navigate', 'Search')...">
+    <input type="text" id="search-filter" class="search-bar" placeholder="Filter contracts, methods, or capability keywords (e.g., 'Health', 'Graph', 'Navigate', 'Search', 'Impact')...">
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Core Capability</div>
       <h3>RepositoryManagementContract <code>client.Repository()</code></h3>
       <p>Lifecycle session management, repository metadata, quantitative metrics, and workspace reload.</p>
       <div class="code-box">
@@ -44,6 +48,7 @@ Reload(ctx context.Context) error</code>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Filesystem Model</div>
       <h3>FileContract <code>client.Files()</code></h3>
       <p>File discovery, classification metadata, indexing status, and inter-file relationships.</p>
       <div class="code-box">
@@ -56,6 +61,7 @@ GetFileRelationships(ctx context.Context, path string) ([]FileRelationship, erro
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Package Topology</div>
       <h3>PackageContract <code>client.Packages()</code></h3>
       <p>Package discovery, hierarchy trees, dependent metrics, and package-to-package relationships.</p>
       <div class="code-box">
@@ -68,6 +74,7 @@ GetPackageRelationships(ctx context.Context, pkgPathOrName string) ([]PackageRel
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Symbol Analysis</div>
       <h3>SymbolContract <code>client.Symbols()</code></h3>
       <p>Symbol lookup, inheritance hierarchy, call sites, and documentation extraction.</p>
       <div class="code-box">
@@ -80,6 +87,7 @@ SymbolOwnership(ctx context.Context, symbolID string) (string, error)</code>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Unified Query Engine</div>
       <h3>SearchContract <code>client.Search()</code></h3>
       <p>Multi-domain unified search across symbols, packages, files, documentation, and configs.</p>
       <div class="code-box">
@@ -93,6 +101,7 @@ SearchConfigs(ctx context.Context, key string, pagination PaginationOptions) (*S
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Knowledge Graph</div>
       <h3>GraphContract <code>client.Graph()</code></h3>
       <p>Knowledge graph traversal, path finding, relationship inspection, and Mermaid/DOT export.</p>
       <div class="code-box">
@@ -108,6 +117,7 @@ ExportGraph(ctx context.Context, filter GraphFilter, format GraphExportFormat) (
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Architecture & Health</div>
       <h3>AnalysisContract <code>client.Analysis()</code></h3>
       <p>Multi-dimensional health scoring, architecture layer boundaries, and dependency analysis.</p>
       <div class="code-box">
@@ -120,6 +130,7 @@ AnalyzeConfiguration(ctx context.Context) (*ConfigurationReport, error)</code>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Semantic Navigation</div>
       <h3>NavigationContract <code>client.Navigation()</code></h3>
       <p>Go-to-definition, reference resolution, and caller/callee call hierarchy graphs.</p>
       <div class="code-box">
@@ -132,6 +143,7 @@ EnrichContext(ctx context.Context, symbolID string) (*NavigationContextResult, e
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Reasoning Engine</div>
       <h3>ReasoningContract <code>client.Reasoning()</code></h3>
       <p>Blast-radius impact analysis, breaking change assessment, and refactoring guidance.</p>
       <div class="code-box">
@@ -144,6 +156,7 @@ EngineeringInsights(ctx context.Context) ([]EngineeringInsight, error)</code>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Event Subsystem</div>
       <h3>EventContract <code>client.Events()</code></h3>
       <p>Real-time asynchronous event subscriptions, streaming channels, and event publication.</p>
       <div class="code-box">
@@ -155,6 +168,7 @@ Events(ctx context.Context, eventType string) (&lt;-chan Event, error)</code>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Unified Facade</div>
       <h3>IntelligenceContract <code>client.Intelligence()</code></h3>
       <p>Unified high-level facade across graph, analysis, navigation, reasoning, and event services.</p>
       <div class="code-box">
@@ -168,7 +182,16 @@ Events() EventContract</code>
   </main>
 
   <footer>
-    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+    <div class="footer-container">
+      <p>&copy; 2026 Limoxel Project. Engineering Knowledge Infrastructure. Distributed under the MIT License.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html">Documentation</a></li>
+        <li><a href="api-explorer.html">API Contracts</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
   </footer>
 
   <script src="js/portal.js"></script>

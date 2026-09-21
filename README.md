@@ -1213,7 +1213,7 @@ For a more detailed repository structure reference, see the repository documenta
 
 # Current Release
 
-**Limoxel 1.5.0** extends the platform with an extensible plugin ecosystem alongside its repository analysis, engineering intelligence, CLI, and public SDK capabilities.
+**Limoxel 1.5.1** extends the platform with an extensible plugin ecosystem alongside its repository analysis, engineering intelligence, CLI, and public SDK capabilities.
 
 | Capability | Status |
 | ------------ | :------: |

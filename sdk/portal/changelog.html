@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Changelog - Limoxel SDK</title>
   <link rel="stylesheet" href="css/portal.css">
 </head>
-
 <body>
   <header>
     <div class="nav-container">
       <a href="index.html" class="logo">
         <span>Limoxel SDK</span>
-        <span class="badge">v1.5.0</span>
+        <span class="badge">v1.5.1</span>
       </a>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
@@ -26,57 +24,104 @@
   </header>
 
   <main>
-    <h1 style="color: var(--text-bright); margin-bottom: 1.5rem;">Release History & Changelog</h1>
+    <div class="page-header">
+      <div class="hero-tag">Release History</div>
+      <h1>Release History & Changelog</h1>
+      <p>Official release record of the Limoxel Engineering Knowledge Infrastructure platform and SDK.</p>
+    </div>
 
-    <div class="card" style="margin-bottom: 2rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="color: var(--text-bright);">Version 1.4.0 <span class="badge"
-            style="background-color: var(--accent-green); color: #0b0e14;">Current Release</span></h2>
-        <span style="color: var(--text-muted);">2026-08-28</span>
+    <div class="card release-card" style="margin-bottom: 2rem;">
+      <div class="release-header">
+        <h2>Version 1.5.1 <span class="badge badge-current">Current Release</span></h2>
+        <span class="release-date">2026-09-21</span>
       </div>
 
-      <h4 style="color: var(--accent-blue); margin-top: 1rem;">Added</h4>
-      <ul style="margin-left: 1.5rem; margin-top: 0.5rem; color: var(--text-primary);">
-        <li>Production-grade public SDK & Compatibility framework under <code>sdk/compatibility</code>.</li>
-        <li>Master SDK User Manual and zero-dependency Developer Portal suite.</li>
-        <li>Full end-to-end contract validation, concurrency safety suite, and release manifest packaging.</li>
+      <h4 class="release-subheading">Security & Storage Boundary Hardening</h4>
+      <ul class="release-list">
+        <li>Hardened marketplace storage path resolution with defensive containment checks at the filesystem boundary.</li>
+        <li>Enforced content-addressed SHA-256 digest validation across plugin artifact and metadata storage operations.</li>
+        <li>Strengthened process-file locking to prevent lock files from escaping configured storage roots.</li>
+      </ul>
+
+      <h4 class="release-subheading">Reliability & Process Isolation</h4>
+      <ul class="release-list">
+        <li>Enhanced OS process group isolation and lifecycle management for out-of-process execution.</li>
+        <li>Guaranteed clean subprocess tree termination on Unix (process groups via <code>setpgid</code>) and Windows (Job Objects).</li>
+        <li>Improved resource limiter enforcement and error classification under bounded test execution.</li>
+      </ul>
+
+      <h4 class="release-subheading">Continuous Integration</h4>
+      <ul class="release-list">
+        <li>Restored GitHub Actions workflow to exactly 4 dynamically discovered, round-robin balanced test shards.</li>
+        <li>Enforced race detection, atomic coverage profiling, and aggregated coverage consolidation across all 4 shards.</li>
       </ul>
     </div>
 
-    <div class="card" style="margin-bottom: 2rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2 style="color: var(--text-bright);">Version 1.4.0</h2>
-        <span style="color: var(--text-muted);">2026-08-28</span>
+    <div class="card release-card" style="margin-bottom: 2rem;">
+      <div class="release-header">
+        <h2>Version 1.5.0</h2>
+        <span class="release-date">2026-09-20</span>
       </div>
 
-      <h4 style="color: var(--accent-blue); margin-top: 1rem;">Added</h4>
-      <ul style="margin-left: 1.5rem; margin-top: 0.5rem; color: var(--text-primary);">
-        <li>Comprehensive public Go SDK layer under <code>github.com/unhield/limoxel/sdk</code>.</li>
-        <li>11 stable public capability contracts across Core Repository and Intelligence systems.</li>
-        <li>Public Knowledge Graph export supporting Mermaid and Graphviz DOT formats.</li>
-        <li>Multidimensional repository health and architectural boundary compliance evaluators.</li>
-        <li>Blast-radius change impact analysis and automated refactoring guidance.</li>
-        <li>Real-time event streaming and subscription engine.</li>
-        <li>Cryptographic checksum and release manifest validation pipeline.</li>
-        <li>Static zero-dependency Developer Portal with interactive API Explorer and Example Gallery.</li>
+      <h4 class="release-subheading">Plugin Framework & Ecosystem</h4>
+      <ul class="release-list">
+        <li>Added extensible Limoxel Plugin Framework supporting defined extension contracts and capability declarations.</li>
+        <li>Added deterministic plugin lifecycle state machine (installed, active, suspended, terminated).</li>
+        <li>Added public Plugin SDK for developing third-party analysis, repository, and graph extensions.</li>
+      </ul>
+
+      <h4 class="release-subheading">Security & Isolation</h4>
+      <ul class="release-list">
+        <li>Added cryptographic plugin signature verification and publisher trust validation.</li>
+        <li>Introduced multi-tier permission controls across filesystem, network, configuration, and runtime resources.</li>
+        <li>Added process-level sandboxing with memory, CPU, and process count quotas.</li>
+      </ul>
+
+      <h4 class="release-subheading">Marketplace Infrastructure</h4>
+      <ul class="release-list">
+        <li>Added marketplace catalog management, version indexing, and semantic dependency resolution.</li>
+        <li>Introduced publisher verification, community review models, and rating infrastructure.</li>
+      </ul>
+    </div>
+
+    <div class="card release-card" style="margin-bottom: 2rem;">
+      <div class="release-header">
+        <h2>Version 1.4.0</h2>
+        <span class="release-date">2026-08-28</span>
+      </div>
+
+      <h4 class="release-subheading">Public Go SDK Layer</h4>
+      <ul class="release-list">
+        <li>Introduced the public Go SDK under <code>github.com/unhield/limoxel/sdk</code>.</li>
+        <li>Exposed 11 stable capability contracts: Repository, File, Package, Symbol, Search, Graph, Analysis, Navigation, Reasoning, Events, and Intelligence.</li>
+        <li>Added Knowledge Graph export supporting Mermaid flowchart and Graphviz DOT formats.</li>
+        <li>Added multidimensional codebase health evaluation and circular dependency detection.</li>
+        <li>Added blast-radius change impact analysis and refactoring safety guidance.</li>
+        <li>Introduced zero-dependency Developer Portal with interactive API Explorer and Example Gallery.</li>
       </ul>
     </div>
 
     <div class="card" style="margin-bottom: 2rem;">
       <h3 style="color: var(--text-bright); margin-bottom: 0.5rem;">Semantic Versioning & Compatibility Policy</h3>
       <p style="color: var(--text-muted);">
-        The Limoxel SDK strictly adheres to Semantic Versioning 2.0.0. Major releases represent breaking contract
-        modifications, Minor releases represent backward-compatible capability additions, and Patch releases represent
-        backward-compatible bug/security fixes.
+        The Limoxel platform strictly adheres to Semantic Versioning 2.0.0. Major releases indicate breaking changes, Minor releases add backward-compatible capabilities, and Patch releases provide backward-compatible bug and security fixes.
       </p>
     </div>
   </main>
 
   <footer>
-    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+    <div class="footer-container">
+      <p>&copy; 2026 Limoxel Project. Engineering Knowledge Infrastructure. Distributed under the MIT License.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html">Documentation</a></li>
+        <li><a href="api-explorer.html">API Contracts</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
   </footer>
 
   <script src="js/portal.js"></script>
 </body>
-
 </html>

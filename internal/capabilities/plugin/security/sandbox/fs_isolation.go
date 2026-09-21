@@ -120,11 +120,15 @@ func (g *FilesystemGuard) ValidateWrite(targetPath string) (string, error) {
 		if !g.allowRepoWrite {
 			return "", fmt.Errorf("%w: repository workspace write access is disabled", ErrWriteDenied)
 		}
-		// Deny writes into sensitive workspace directories (.git, .limoxel)
+		// Deny writes into sensitive workspace directories (.git, .limoxel) anywhere in hierarchy
 		rel, _ := filepath.Rel(g.workspaceRoot, canon)
 		relSlash := filepath.ToSlash(rel)
-		if strings.HasPrefix(relSlash, ".git") || strings.HasPrefix(relSlash, ".limoxel") {
-			return "", fmt.Errorf("%w: modifying host system or metadata directory '%s' is forbidden", ErrWriteDenied, relSlash)
+		components := strings.Split(relSlash, "/")
+		for _, comp := range components {
+			compLower := strings.ToLower(comp)
+			if compLower == ".git" || compLower == ".limoxel" {
+				return "", fmt.Errorf("%w: modifying host system or metadata directory '%s' is forbidden", ErrWriteDenied, relSlash)
+			}
 		}
 		return canon, nil
 	}
@@ -143,9 +147,9 @@ func (g *FilesystemGuard) canonicalizeAndCheckFormat(p string) (string, error) {
 		return "", fmt.Errorf("%w: path cannot be empty", ErrIllegalPathFormat)
 	}
 
-	// 1. Check for UNC network paths (e.g. \\server\share or //server/share)
-	if strings.HasPrefix(trimmed, `\\`) || strings.HasPrefix(trimmed, `//`) {
-		return "", fmt.Errorf("%w: UNC network paths are prohibited: %s", ErrIllegalPathFormat, trimmed)
+	// 1. Check for UNC network paths or Windows device paths (e.g. \\server\share, //server/share, \\.\, \\?\, \??\)
+	if strings.HasPrefix(trimmed, `\\`) || strings.HasPrefix(trimmed, `//`) || strings.HasPrefix(trimmed, `\??\`) {
+		return "", fmt.Errorf("%w: UNC network or device paths are prohibited: %s", ErrIllegalPathFormat, trimmed)
 	}
 
 	// 2. Check for NTFS alternate data streams on Windows (e.g. file.txt:secret)

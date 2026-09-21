@@ -11,7 +11,7 @@
     <div class="nav-container">
       <a href="index.html" class="logo">
         <span>Limoxel SDK</span>
-        <span class="badge">v1.5.0</span>
+        <span class="badge">v1.5.1</span>
       </a>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
@@ -24,14 +24,18 @@
   </header>
 
   <main>
-    <h1 style="color: var(--text-bright); margin-bottom: 1rem;">SDK Example Gallery</h1>
-    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Copyable, verified code recipes demonstrating real-world Limoxel SDK usage.</p>
+    <div class="page-header">
+      <div class="hero-tag">Integration Recipes</div>
+      <h1>SDK Example Gallery</h1>
+      <p>Verified, copyable Go recipes demonstrating real-world integration with Limoxel's Engineering Knowledge Infrastructure.</p>
+    </div>
 
-    <input type="text" id="search-filter" class="search-bar" placeholder="Search examples (e.g. 'Basic', 'Health', 'Mermaid', 'Callers', 'Impact')...">
+    <input type="text" id="search-filter" class="search-bar" placeholder="Search examples (e.g. 'Basic', 'Health', 'Mermaid', 'Callers', 'Impact', 'Events', 'Cycles')...">
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
-      <h3>1. Basic Workspace & Symbol Discovery</h3>
-      <p>Initialize the client, query file counts, and search symbols in a single workflow.</p>
+      <div class="contract-badge">Discovery & Query</div>
+      <h3>1. Workspace Initialization & Symbol Discovery</h3>
+      <p>Open a local workspace session, query repository metadata, and execute symbol searches across package boundaries.</p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
         <code>package main
@@ -39,25 +43,39 @@
 import (
     "context"
     "fmt"
+    "log"
+    "time"
+
     "github.com/unhield/limoxel/sdk"
 )
 
 func main() {
-    ctx := context.Background()
-    client, _ := sdk.OpenWorkspace(ctx, ".")
+    ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+    defer cancel()
+
+    client, err := sdk.OpenWorkspace(ctx, ".")
+    if err != nil {
+        log.Fatalf("failed to open workspace: %v", err)
+    }
     defer client.Close()
 
-    res, _ := client.Search().SearchSymbols(ctx, "New", sdk.PaginationOptions{Limit: 5})
+    res, err := client.Search().SearchSymbols(ctx, "New", sdk.PaginationOptions{Limit: 5})
+    if err != nil {
+        log.Fatalf("symbol search failed: %v", err)
+    }
+
+    fmt.Printf("Matched %d symbols:\n", res.TotalMatches)
     for _, m := range res.Matches {
-        fmt.Printf("%s (%s)\n", m.Name, m.Location)
+        fmt.Printf(" - %s (%s)\n", m.Name, m.Location)
     }
 }</code>
       </div>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">CI Quality Gate</div>
       <h3>2. CI Architecture & Health Quality Gate</h3>
-      <p>Evaluate overall repository health scores and detect circular dependencies.</p>
+      <p>Evaluate overall repository health scores and verify that circular package dependencies remain zero in automated build pipelines.</p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
         <code>package main
@@ -65,26 +83,48 @@ func main() {
 import (
     "context"
     "fmt"
+    "log"
+    "os"
+    "time"
+
     "github.com/unhield/limoxel/sdk"
 )
 
 func main() {
-    ctx := context.Background()
-    client, _ := sdk.OpenWorkspace(ctx, ".")
+    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+    defer cancel()
+
+    client, err := sdk.OpenWorkspace(ctx, ".")
+    if err != nil {
+        log.Fatalf("failed to open workspace: %v", err)
+    }
     defer client.Close()
 
-    health, _ := client.Analysis().RepositoryHealth(ctx)
+    health, err := client.Analysis().RepositoryHealth(ctx)
+    if err != nil {
+        log.Fatalf("health check failed: %v", err)
+    }
+
     fmt.Printf("Health: %.1f/100 (Grade: %s)\n", health.OverallScore, health.Grade)
 
-    deps, _ := client.Analysis().AnalyzeDependencies(ctx, "")
-    fmt.Printf("Circular Dependencies: %d\n", deps.CircularDependencies)
+    deps, err := client.Analysis().AnalyzeDependencies(ctx, "")
+    if err != nil {
+        log.Fatalf("dependency analysis failed: %v", err)
+    }
+
+    if deps.CircularDependencies > 0 {
+        fmt.Fprintf(os.Stderr, "FAILURE: Detected %d circular dependencies\n", deps.CircularDependencies)
+        os.Exit(1)
+    }
+    fmt.Println("SUCCESS: Zero circular dependencies detected.")
 }</code>
       </div>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
-      <h3>3. Exporting Knowledge Graphs to Mermaid</h3>
-      <p>Render relationship graphs into Mermaid flowchart format for documentation.</p>
+      <div class="contract-badge">Knowledge Graph</div>
+      <h3>3. Exporting Knowledge Graphs to Mermaid & DOT</h3>
+      <p>Extract dependency topologies and render relationship subgraphs into Mermaid flowchart or Graphviz DOT formats for documentation.</p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
         <code>package main
@@ -92,23 +132,38 @@ func main() {
 import (
     "context"
     "fmt"
+    "log"
+    "time"
+
     "github.com/unhield/limoxel/sdk"
 )
 
 func main() {
-    ctx := context.Background()
-    client, _ := sdk.OpenWorkspace(ctx, ".")
+    ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+    defer cancel()
+
+    client, err := sdk.OpenWorkspace(ctx, ".")
+    if err != nil {
+        log.Fatalf("failed to open workspace: %v", err)
+    }
     defer client.Close()
 
-    res, _ := client.Graph().ExportGraph(ctx, sdk.GraphFilter{MaxDepth: 2}, sdk.ExportFormatMermaid)
+    filter := sdk.GraphFilter{MaxDepth: 2}
+    res, err := client.Graph().ExportGraph(ctx, filter, sdk.ExportFormatMermaid)
+    if err != nil {
+        log.Fatalf("graph export failed: %v", err)
+    }
+
+    fmt.Println("--- Mermaid Knowledge Graph ---")
     fmt.Println(res.Content)
 }</code>
       </div>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Navigation</div>
       <h3>4. Definition & Reference Navigation</h3>
-      <p>Find symbol definitions and all incoming references across packages.</p>
+      <p>Resolve exact declaration sites for symbols and locate all call sites and incoming references across the entire codebase.</p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
         <code>package main
@@ -116,25 +171,38 @@ func main() {
 import (
     "context"
     "fmt"
+    "log"
+    "time"
+
     "github.com/unhield/limoxel/sdk"
 )
 
 func main() {
-    ctx := context.Background()
-    client, _ := sdk.OpenWorkspace(ctx, ".")
+    ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+    defer cancel()
+
+    client, err := sdk.OpenWorkspace(ctx, ".")
+    if err != nil {
+        log.Fatalf("failed to open workspace: %v", err)
+    }
     defer client.Close()
 
-    def, _ := client.Navigation().GoToDefinition(ctx, "Calculate")
+    def, err := client.Navigation().GoToDefinition(ctx, "Calculate")
+    if err != nil {
+        log.Fatalf("navigation failed: %v", err)
+    }
+
     if def.Target != nil {
-        fmt.Printf("Defined at: %s:%d\n", def.Target.FilePath, def.Target.Line)
+        fmt.Printf("Symbol defined at: %s:%d\n", def.Target.FilePath, def.Target.Line)
     }
 }</code>
       </div>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
+      <div class="contract-badge">Reasoning</div>
       <h3>5. Blast-Radius Change Impact Reasoning</h3>
-      <p>Compute downstream impacted entities and risk score for a proposed change.</p>
+      <p>Compute downstream impacted packages, affected consumers, and risk scores before committing structural refactorings.</p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
         <code>package main
@@ -142,23 +210,39 @@ func main() {
 import (
     "context"
     "fmt"
+    "log"
+    "time"
+
     "github.com/unhield/limoxel/sdk"
 )
 
 func main() {
-    ctx := context.Background()
-    client, _ := sdk.OpenWorkspace(ctx, ".")
+    ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+    defer cancel()
+
+    client, err := sdk.OpenWorkspace(ctx, ".")
+    if err != nil {
+        log.Fatalf("failed to open workspace: %v", err)
+    }
     defer client.Close()
 
-    impact, _ := client.Reasoning().AnalyzeImpact(ctx, "pkg/core")
-    fmt.Printf("Risk: %s (Impact Score: %.1f)\n", impact.RiskLevel, impact.ImpactScore)
+    impact, err := client.Reasoning().AnalyzeImpact(ctx, "internal/storage")
+    if err != nil {
+        log.Fatalf("impact reasoning failed: %v", err)
+    }
+
+    fmt.Printf("Target: internal/storage\n")
+    fmt.Printf("Risk Level: %s (Impact Score: %.1f)\n", impact.RiskLevel, impact.ImpactScore)
+    fmt.Printf("Directly Impacted: %d, Indirectly Impacted: %d\n",
+        len(impact.DirectlyImpacted), len(impact.IndirectlyImpacted))
 }</code>
       </div>
     </div>
 
     <div class="filterable-item card" style="margin-bottom: 1.5rem;">
-      <h3>6. Real-Time Event Streaming</h3>
-      <p>Subscribe to repository lifecycle and analysis completion events asynchronously.</p>
+      <div class="contract-badge">Event Streaming</div>
+      <h3>6. Asynchronous Real-Time Event Streaming</h3>
+      <p>Subscribe to repository lifecycle events and analysis milestones over thread-safe event subscriptions.</p>
       <div class="code-box">
         <button class="copy-btn">Copy</button>
         <code>package main
@@ -166,27 +250,48 @@ func main() {
 import (
     "context"
     "fmt"
+    "log"
+    "time"
+
     "github.com/unhield/limoxel/sdk"
 )
 
 func main() {
-    ctx := context.Background()
-    client, _ := sdk.New(sdk.WithWorkspace("."))
+    ctx, cancel := context.WithCancel(context.Background())
+    defer cancel()
+
+    client, err := sdk.New(sdk.WithWorkspace("."))
+    if err != nil {
+        log.Fatalf("client init failed: %v", err)
+    }
     defer client.Close()
 
-    sub, _ := client.Events().Subscribe(ctx, sdk.EventTypeRepositoryOpened, func(ev sdk.Event) {
-        fmt.Printf("Event: %s at %s\n", ev.Type(), ev.Timestamp())
+    sub, err := client.Events().Subscribe(ctx, sdk.EventTypeRepositoryOpened, func(ev sdk.Event) {
+        fmt.Printf("[EVENT RECEIVED] Type=%s Time=%s\n", ev.Type(), ev.Timestamp())
     })
+    if err != nil {
+        log.Fatalf("subscribe failed: %v", err)
+    }
     defer sub.Unsubscribe()
 
     _, _ = client.Repository().Open(ctx, ".")
+    time.Sleep(100 * time.Millisecond) // Allow async dispatcher flush
 }</code>
       </div>
     </div>
   </main>
 
   <footer>
-    <p>&copy; 2026 Limoxel Project. Distributed under the MIT License.</p>
+    <div class="footer-container">
+      <p>&copy; 2026 Limoxel Project. Engineering Knowledge Infrastructure. Distributed under the MIT License.</p>
+      <ul class="footer-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="docs.html">Documentation</a></li>
+        <li><a href="api-explorer.html">API Contracts</a></li>
+        <li><a href="examples.html">Examples</a></li>
+        <li><a href="changelog.html">Changelog</a></li>
+      </ul>
+    </div>
   </footer>
 
   <script src="js/portal.js"></script>

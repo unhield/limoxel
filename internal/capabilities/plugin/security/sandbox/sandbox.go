@@ -11,17 +11,21 @@ var (
 	ErrSandboxViolation = errors.New("sandbox: security boundary violation")
 	// ErrResourceExhausted indicates memory, time, or process quota was exceeded.
 	ErrResourceExhausted = errors.New("sandbox: resource quota exhausted")
+	// ErrUnsupportedPlatform indicates that the current operating system lacks process sandboxing primitives.
+	ErrUnsupportedPlatform = errors.New("sandbox: platform does not support process sandbox")
 )
 
-// IsolationLevel defines the depth of isolation applied to a plugin.
+// IsolationLevel defines the depth of isolation policy applied to a plugin.
+// Note: Filesystem and network guards provide in-process application policy mediation.
+// OS-level isolation (Win32 Job Objects on Windows; independent process groups on Unix) is applied to attached processes.
 type IsolationLevel string
 
 const (
-	// IsolationLevelStrict applies OS-level Job Object/Process Group, strict filesystem jail, and network denial.
+	// IsolationLevelStrict applies OS-level process isolation, strict filesystem policy, and network denial.
 	IsolationLevelStrict IsolationLevel = "STRICT"
-	// IsolationLevelStandard applies process separation, filesystem jail, and permission-based network.
+	// IsolationLevelStandard applies OS-level process isolation, filesystem policy, and permission-based network.
 	IsolationLevelStandard IsolationLevel = "STANDARD"
-	// IsolationLevelRestricted applies minimal permissions with read-only sandbox.
+	// IsolationLevelRestricted applies minimal permissions with read-only workspace access.
 	IsolationLevelRestricted IsolationLevel = "RESTRICTED"
 )
 
@@ -73,6 +77,10 @@ type PluginSandbox interface {
 	Network() *NetworkGuard
 
 	// AttachProcess binds a launched operating system process to the sandbox controls.
+	//
+	// On Unix systems, the target process must be launched in an independent process group
+	// (e.g. via IsolateProcessCmd). Attempting to attach a process that shares the host
+	// process group or current runner PID will fail closed and return ErrSandboxViolation.
 	AttachProcess(pid int) error
 
 	// Terminate forcibly terminates all processes assigned to the sandbox.

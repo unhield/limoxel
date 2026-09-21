@@ -42,6 +42,11 @@ func (g *NetworkGuard) IsNetworkAllowed() bool {
 }
 
 // ValidateConnection checks whether a target network address (host:port) is authorized.
+//
+// Security Notice: This method performs in-process destination policy evaluation before
+// connections are established. It does NOT intercept raw sockets or kernel syscalls of
+// child processes, and does NOT prevent DNS rebinding attacks (IP pinning must be implemented
+// at the socket dialer level).
 func (g *NetworkGuard) ValidateConnection(network, address string) error {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
@@ -52,16 +57,29 @@ func (g *NetworkGuard) ValidateConnection(network, address string) error {
 
 	host, _, err := net.SplitHostPort(address)
 	if err != nil {
-		// Might just be host without port
-		host = address
+		// Might just be host without port, or unbracketed IPv6 with port (e.g. ::1:8080)
+		if ip := net.ParseIP(address); ip != nil {
+			host = address
+		} else if lastColon := strings.LastIndex(address, ":"); lastColon != -1 {
+			possibleIP := address[:lastColon]
+			possiblePort := address[lastColon+1:]
+			if net.ParseIP(possibleIP) != nil && possiblePort != "" {
+				host = possibleIP
+			} else {
+				host = address
+			}
+		} else {
+			host = address
+		}
 	}
 	host = strings.ToLower(strings.TrimSpace(host))
 
-	// Check loopback and unspecified addresses
+	cleanHost := strings.Trim(host, "[]")
 	isLoopback := host == "localhost" || host == "localhost.localdomain" || host == "ip6-localhost" || host == "ip6-loopback" ||
-		host == "127.0.0.1" || host == "::1" || host == "0.0.0.0" || host == "::" || host == "[::1]" || strings.HasPrefix(host, "127.")
+		cleanHost == "127.0.0.1" || cleanHost == "::1" || cleanHost == "0.0.0.0" || cleanHost == "::" ||
+		strings.HasPrefix(cleanHost, "127.") || strings.HasPrefix(cleanHost, "::ffff:127.") ||
+		strings.HasPrefix(cleanHost, "::1:")
 	if !isLoopback {
-		cleanHost := strings.Trim(host, "[]")
 		if ip := net.ParseIP(cleanHost); ip != nil {
 			if ip.IsLoopback() || ip.IsUnspecified() {
 				isLoopback = true
@@ -85,11 +103,14 @@ func (g *NetworkGuard) ValidateConnection(network, address string) error {
 		if normPattern == host || normPattern == address {
 			return nil
 		}
-		// Wildcard domain, e.g. "*.example.com"
+		// Wildcard domain, e.g. "*.example.com" matches "sub.example.com", NOT "example.com"
 		if strings.HasPrefix(normPattern, "*.") {
 			suffix := strings.TrimPrefix(normPattern, "*.")
-			if strings.HasSuffix(host, "."+suffix) || host == suffix {
-				return nil
+			// Require suffix to contain at least one dot to prevent unrestricted TLD wildcards (*.com)
+			if strings.Contains(suffix, ".") && !strings.HasPrefix(suffix, ".") && !strings.HasSuffix(suffix, ".") {
+				if strings.HasSuffix(host, "."+suffix) {
+					return nil
+				}
 			}
 		}
 	}
@@ -97,30 +118,29 @@ func (g *NetworkGuard) ValidateConnection(network, address string) error {
 	return fmt.Errorf("%w: destination '%s' does not match any allowed host pattern", ErrDestinationBlocked, address)
 }
 
-// SanitizeEnvironment strips sensitive proxy and network environment variables.
+// SanitizeEnvironment strips sensitive proxy and credential environment variables.
 func (g *NetworkGuard) SanitizeEnvironment(env []string) []string {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
 
 	var sanitized []string
-	sensitivePrefixes := []string{
-		"HTTP_PROXY=", "http_proxy=",
-		"HTTPS_PROXY=", "https_proxy=",
-		"ALL_PROXY=", "all_proxy=",
-		"NO_PROXY=", "no_proxy=",
-		"SSH_AUTH_SOCK=", "AWS_ACCESS_KEY_ID=", "AWS_SECRET_ACCESS_KEY=",
-		"GITHUB_TOKEN=", "GITLAB_TOKEN=",
+	sensitiveKeys := map[string]struct{}{
+		"HTTP_PROXY":            {},
+		"HTTPS_PROXY":           {},
+		"ALL_PROXY":             {},
+		"NO_PROXY":              {},
+		"SSH_AUTH_SOCK":         {},
+		"AWS_ACCESS_KEY_ID":     {},
+		"AWS_SECRET_ACCESS_KEY": {},
+		"AWS_SESSION_TOKEN":     {},
+		"GITHUB_TOKEN":          {},
+		"GITLAB_TOKEN":          {},
 	}
 
 	for _, e := range env {
-		blocked := false
-		for _, prefix := range sensitivePrefixes {
-			if strings.HasPrefix(e, prefix) {
-				blocked = true
-				break
-			}
-		}
-		if !blocked {
+		parts := strings.SplitN(e, "=", 2)
+		key := strings.ToUpper(strings.TrimSpace(parts[0]))
+		if _, blocked := sensitiveKeys[key]; !blocked {
 			sanitized = append(sanitized, e)
 		}
 	}
